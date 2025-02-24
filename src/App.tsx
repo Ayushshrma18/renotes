@@ -10,6 +10,8 @@ import Daily from "./pages/Daily";
 import Tags from "./pages/Tags";
 import Favorites from "./pages/Favorites";
 import Streak from "./pages/Streak";
+import Profile from "./pages/Profile";
+import Trash from "./pages/Trash";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
             <Route path="/tags" element={<Tags />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/streak" element={<Streak />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/trash" element={<Trash />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </MainLayout>
