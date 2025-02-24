@@ -121,3 +121,20 @@ const updateStreak = (profile: UserProfile) => {
   
   profile.lastNoteDate = today;
 };
+
+export const getTagsWithCount = () => {
+  const notes = getActiveNotes();
+  const tagCount: Record<string, number> = {};
+  
+  notes.forEach((note) => {
+    note.tags.forEach((tag) => {
+      tagCount[tag] = (tagCount[tag] || 0) + 1;
+    });
+  });
+  
+  return Object.entries(tagCount).map(([tag, count]) => ({ tag, count }));
+};
+
+export const getNotesByTag = (tag: string) => {
+  return getActiveNotes().filter((note) => note.tags.includes(tag));
+};

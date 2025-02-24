@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,28 +27,38 @@ import { Textarea } from "@/components/ui/textarea";
 interface NoteEditorProps {
   isOpen: boolean;
   onClose: () => void;
+  note?: Note | null;
 }
 
-const NoteEditor = ({ isOpen, onClose }: NoteEditorProps) => {
+const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title);
+      setContent(note.content);
+      setTags(note.tags);
+    } else {
+      setTitle("");
+      setContent("");
+      setTags([]);
+    }
+  }, [note]);
+
   const handleSave = () => {
-    const note = {
-      id: Date.now().toString(),
+    const updatedNote = {
+      id: note?.id || Date.now().toString(),
       title,
       content,
       date: new Date().toISOString(),
       tags,
-      isFavorite: false,
+      isFavorite: note?.isFavorite || false,
     };
-    saveNote(note);
+    saveNote(updatedNote);
     onClose();
-    setTitle("");
-    setContent("");
-    setTags([]);
   };
 
   const handleAddTag = (e: React.KeyboardEvent) => {
@@ -82,7 +91,7 @@ const NoteEditor = ({ isOpen, onClose }: NoteEditorProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>New Note</DialogTitle>
+          <DialogTitle>{note ? "Edit Note" : "New Note"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
