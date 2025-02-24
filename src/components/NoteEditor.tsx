@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,7 @@ import {
   Hash,
   X,
 } from "lucide-react";
-import { saveNote } from "@/lib/storage";
+import { saveNote, type Note } from "@/lib/storage";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 
