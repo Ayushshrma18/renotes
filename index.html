@@ -74,7 +74,9 @@
         // Redirect to login if not authenticated
         document.addEventListener('DOMContentLoaded', () => {
             const user = supabase.auth.user();
+            console.log('Checking authentication status:', user);
             if (!user) {
+                console.log('User not authenticated, redirecting to login page.');
                 window.location.href = '/login.html'; // Redirect to login page
             }
         });
