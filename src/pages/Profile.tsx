@@ -3,18 +3,120 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getUserProfile, saveUserProfile, type UserProfile } from "@/lib/storage";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User } from "lucide-react";
+import { supabase } from "@/supabaseClient";
+import { useToast } from "@/components/ui/use-toast";
 
 const Profile = () => {
-  const [profile, setProfile] = useState<UserProfile>(getUserProfile());
-  const [username, setUsername] = useState(profile.username);
+  const [profile, setProfile] = useState({
+    username: "",
+    avatar_url: "",
+    points: 0,
+    streak: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSave = () => {
-    const updatedProfile = { ...profile, username };
-    saveUserProfile(updatedProfile);
-    setProfile(updatedProfile);
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          setProfile(profile);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  };
+
+  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) throw new Error('No user');
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error('You must select an image to upload.');
+      }
+
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString(),
+        });
+
+      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      toast({
+        title: "Success",
+        description: "Avatar updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error updating avatar",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) throw new Error('No user');
+
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          username: profile.username,
+          updated_at: new Date().toISOString(),
+        });
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error updating profile",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,26 +126,42 @@ const Profile = () => {
       <div className="glass-card p-6 rounded-lg space-y-6">
         <div className="flex items-center gap-6">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={profile.avatarUrl} />
+            <AvatarImage src={profile.avatar_url} />
             <AvatarFallback>
               <User className="h-10 w-10" />
             </AvatarFallback>
           </Avatar>
-          <Button variant="outline">Change Avatar</Button>
+          <div>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={uploadAvatar}
+              disabled={loading}
+              className="hidden"
+              id="avatar-upload"
+            />
+            <Label htmlFor="avatar-upload" className="cursor-pointer">
+              <Button variant="outline" asChild>
+                <span>Change Avatar</span>
+              </Button>
+            </Label>
+          </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="username">Username</Label>
           <Input
             id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={profile.username}
+            onChange={(e) => setProfile(prev => ({ ...prev, username: e.target.value }))}
             placeholder="Enter username"
           />
         </div>
 
         <div className="pt-4 flex justify-end">
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={updateProfile} disabled={loading}>
+            Save Changes
+          </Button>
         </div>
       </div>
 
