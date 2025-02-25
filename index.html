@@ -52,6 +52,20 @@
         </form>
     </div>
 
+    <!-- Profile Management -->
+    <div id="profile-management">
+        <h2>Update Profile</h2>
+        <form id="update-profile-form">
+            <input type="text" id="username" placeholder="Username" />
+            <input type="file" id="avatar-file" accept="image/*" />
+            <button type="submit">Update Profile</button>
+        </form>
+        <form id="change-password-form">
+            <input type="password" id="new-password" placeholder="New Password" required />
+            <button type="submit">Change Password</button>
+        </form>
+    </div>
+
     <script src="src/supabaseClient.js"></script>
     <script src="src/auth.js"></script>
     <script src="src/profile.js"></script>
@@ -73,6 +87,7 @@
             const password = document.getElementById('sign-up-password').value;
             await signUp(email, password);
             document.getElementById('sign-up-loading').style.display = 'none';
+            window.location.href = '/'; // Redirect to home page after sign-up
         });
 
         document.getElementById('log-in-form').addEventListener('submit', async (e) => {
@@ -82,10 +97,12 @@
             const password = document.getElementById('log-in-password').value;
             await logIn(email, password);
             document.getElementById('log-in-loading').style.display = 'none';
+            window.location.href = '/'; // Redirect to home page after login
         });
 
         document.getElementById('log-out-button').addEventListener('click', async () => {
             await logOut();
+            window.location.href = '/login.html'; // Redirect to login page after logout
         });
 
         // Load the current user's profile photo
@@ -108,6 +125,19 @@
                 await addNote(title, content);
                 await fetchNotes(); // Refresh notes list
             });
+        });
+
+        document.getElementById('update-profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const avatarFile = document.getElementById('avatar-file').files[0];
+            await updateProfile({ username, avatarFile });
+        });
+
+        document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password').value;
+            await changePassword(newPassword);
         });
     </script>
   </body>
