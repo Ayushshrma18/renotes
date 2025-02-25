@@ -14,5 +14,48 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Sign Up Form -->
+    <form id="sign-up-form">
+        <h2>Sign Up</h2>
+        <input type="email" id="sign-up-email" placeholder="Email" required />
+        <input type="password" id="sign-up-password" placeholder="Password" required />
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <!-- Log In Form -->
+    <form id="log-in-form">
+        <h2>Log In</h2>
+        <input type="email" id="log-in-email" placeholder="Email" required />
+        <input type="password" id="log-in-password" placeholder="Password" required />
+        <button type="submit">Log In</button>
+    </form>
+
+    <button id="log-out-button">Log Out</button>
+
+    <!-- Profile Photo Upload -->
+    <input type="file" id="profile-photo-input" accept="image/*" />
+
+    <script src="src/auth.js"></script>
+    <script>
+        // Handle form submissions
+        document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('sign-up-email').value;
+            const password = document.getElementById('sign-up-password').value;
+            await signUp(email, password);
+        });
+
+        document.getElementById('log-in-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('log-in-email').value;
+            const password = document.getElementById('log-in-password').value;
+            await logIn(email, password);
+        });
+
+        document.getElementById('log-out-button').addEventListener('click', async () => {
+            await logOut();
+        });
+    </script>
   </body>
 </html>
