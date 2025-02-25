@@ -56,6 +56,14 @@
     <script src="src/profile.js"></script>
     <script src="src/notes.js"></script>
     <script>
+        // Redirect to login if not authenticated
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = supabase.auth.user();
+            if (!user) {
+                window.location.href = '/login.html'; // Redirect to login page
+            }
+        });
+
         // Handle form submissions
         document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
             e.preventDefault();
