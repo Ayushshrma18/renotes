@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = 'https://uxorkfsfbhkzykbtuvws.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4b3JrZnNmYmhrenlrYnR1dndzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0NDY0NzIsImV4cCI6MjA1NjAyMjQ3Mn0.sM6RK0CasCMq5Kach3RTBPeBSywMg50P9Derpq7PZ74';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from './supabaseClient';
 
 // Sign up function
 export async function signUp(email, password) {
