@@ -15,9 +15,17 @@ async function uploadProfilePhoto(file) {
     if (error) {
         alert('Error uploading photo: ' + error.message);
     } else {
-        alert('Photo uploaded successfully!');
-        console.log('Uploaded photo:', data);
-        // Update user profile with the new photo URL
+        const photoUrl = `${supabase.storageUrl}/profile-photos/${fileName}`;
+        const { error: updateError } = await supabase.auth.update({
+            data: { avatar_url: photoUrl }
+        });
+
+        if (updateError) {
+            alert('Error updating profile: ' + updateError.message);
+        } else {
+            alert('Photo uploaded and profile updated successfully!');
+            console.log('Uploaded photo:', data);
+        }
     }
 }
 
