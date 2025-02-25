@@ -16,19 +16,21 @@
     <script type="module" src="/src/main.tsx"></script>
 
     <!-- Sign Up Form -->
-    <form id="sign-up-form">
+    <form id="sign-up-form" aria-label="Sign Up Form">
         <h2>Sign Up</h2>
-        <input type="email" id="sign-up-email" placeholder="Email" required />
-        <input type="password" id="sign-up-password" placeholder="Password" required />
+        <input type="email" id="sign-up-email" placeholder="Email" required aria-required="true" />
+        <input type="password" id="sign-up-password" placeholder="Password" required aria-required="true" />
         <button type="submit">Sign Up</button>
+        <div id="sign-up-loading" style="display: none;">Signing up...</div>
     </form>
 
     <!-- Log In Form -->
-    <form id="log-in-form">
+    <form id="log-in-form" aria-label="Log In Form">
         <h2>Log In</h2>
-        <input type="email" id="log-in-email" placeholder="Email" required />
-        <input type="password" id="log-in-password" placeholder="Password" required />
+        <input type="email" id="log-in-email" placeholder="Email" required aria-required="true" />
+        <input type="password" id="log-in-password" placeholder="Password" required aria-required="true" />
         <button type="submit">Log In</button>
+        <div id="log-in-loading" style="display: none;">Logging in...</div>
     </form>
 
     <button id="log-out-button">Log Out</button>
@@ -45,16 +47,20 @@
         // Handle form submissions
         document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            document.getElementById('sign-up-loading').style.display = 'block';
             const email = document.getElementById('sign-up-email').value;
             const password = document.getElementById('sign-up-password').value;
             await signUp(email, password);
+            document.getElementById('sign-up-loading').style.display = 'none';
         });
 
         document.getElementById('log-in-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            document.getElementById('log-in-loading').style.display = 'block';
             const email = document.getElementById('log-in-email').value;
             const password = document.getElementById('log-in-password').value;
             await logIn(email, password);
+            document.getElementById('log-in-loading').style.display = 'none';
         });
 
         document.getElementById('log-out-button').addEventListener('click', async () => {
