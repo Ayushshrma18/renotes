@@ -41,8 +41,20 @@
     <!-- Profile Photo Upload -->
     <input type="file" id="profile-photo-input" accept="image/*" />
 
+    <!-- Notes Section -->
+    <div id="notes-section">
+        <h2>Your Notes</h2>
+        <div id="notes-list"></div>
+        <form id="add-note-form">
+            <input type="text" id="note-title" placeholder="Note Title" required />
+            <textarea id="note-content" placeholder="Note Content" required></textarea>
+            <button type="submit">Add Note</button>
+        </form>
+    </div>
+
     <script src="src/auth.js"></script>
     <script src="src/profile.js"></script>
+    <script src="src/notes.js"></script>
     <script>
         // Handle form submissions
         document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
@@ -76,6 +88,18 @@
         }
 
         document.addEventListener('DOMContentLoaded', loadProfilePhoto);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchNotes();
+
+            document.getElementById('add-note-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('note-title').value;
+                const content = document.getElementById('note-content').value;
+                await addNote(title, content);
+                await fetchNotes(); // Refresh notes list
+            });
+        });
     </script>
   </body>
 </html>
