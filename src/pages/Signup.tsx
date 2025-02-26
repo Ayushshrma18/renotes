@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { signUp } from "@/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -38,6 +38,9 @@ const Signup = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
