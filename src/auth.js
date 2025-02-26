@@ -15,11 +15,19 @@ export async function signUp(email, password) {
 // Log in function
 export async function logIn(email, password) {
     try {
-        const { user, error } = await supabase.auth.signIn({ email, password });
-        if (error) throw error;
-        alert('User logged in successfully!');
-        console.log('User logged in:', user);
+        const { user, error } = await supabase.auth.signIn({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        // Redirect to home page after successful login
+        window.location.href = '/home.html'; // Adjust the path as needed
     } catch (error) {
+        console.error('Error logging in:', error.message);
         alert('Error logging in: ' + error.message);
     }
 }
