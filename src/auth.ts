@@ -1,6 +1,5 @@
 
 import { supabase } from './supabaseClient';
-import { redirect } from 'react-router-dom';
 
 export async function signUp(email: string, password: string) {
   const { data, error } = await supabase.auth.signUp({
