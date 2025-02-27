@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,48 +7,43 @@ import { User, LogOut, Key, Check, X } from "lucide-react";
 import { supabase } from "@/supabaseClient";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 const Profile = () => {
   const [profile, setProfile] = useState({
     username: "",
     avatar_url: "",
     points: 0,
-    streak: 0,
+    streak: 0
   });
   const [loading, setLoading] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState({
     current: "",
     new: "",
-    confirm: "",
+    confirm: ""
   });
   const [passwordError, setPasswordError] = useState("");
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     loadProfile();
   }, []);
-
   const loadProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (user) {
         // First check if the profiles table exists and has the user's data
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
+        const {
+          data: profile,
+          error
+        } = await supabase.from('profiles').select('*').eq('id', user.id).single();
         if (error) {
           console.error('Error fetching profile:', error);
           // If no profile found, create a basic one
@@ -59,14 +53,13 @@ const Profile = () => {
             avatar_url: "",
             points: 0,
             streak: 0,
-            updated_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           };
-          
+
           // Try to insert a new profile
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .upsert(defaultProfile);
-            
+          const {
+            error: insertError
+          } = await supabase.from('profiles').upsert(defaultProfile);
           if (insertError) {
             console.error('Error creating profile:', insertError);
           } else {
@@ -80,40 +73,44 @@ const Profile = () => {
       console.error('Error loading profile:', error);
     }
   };
-
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
-
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('No user');
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select an image to upload.');
       }
-
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `avatar-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
       // First check if the bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
+      const {
+        data: buckets
+      } = await supabase.storage.listBuckets();
       let bucketExists = false;
-      
       if (buckets) {
         bucketExists = buckets.some(bucket => bucket.name === 'avatars');
       }
-      
+
       // If bucket doesn't exist, try creating it (may require admin privileges)
       if (!bucketExists) {
         try {
-          const { data, error } = await supabase.storage.createBucket('avatars', {
+          const {
+            data,
+            error
+          } = await supabase.storage.createBucket('avatars', {
             public: true
           });
           if (error) throw error;
@@ -124,127 +121,128 @@ const Profile = () => {
       }
 
       // Upload the file
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
-
+      const {
+        error: uploadError
+      } = await supabase.storage.from('avatars').upload(filePath, file, {
+        upsert: true
+      });
       if (uploadError) throw uploadError;
 
       // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      const {
+        data: {
+          publicUrl
+        }
+      } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
       // Update the profile with the new avatar URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          avatar_url: publicUrl,
-          updated_at: new Date().toISOString(),
-        });
-
+      const {
+        error: updateError
+      } = await supabase.from('profiles').upsert({
+        id: user.id,
+        avatar_url: publicUrl,
+        updated_at: new Date().toISOString()
+      });
       if (updateError) throw updateError;
-
-      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      setProfile(prev => ({
+        ...prev,
+        avatar_url: publicUrl
+      }));
       toast({
         title: "Success",
-        description: "Avatar updated successfully",
+        description: "Avatar updated successfully"
       });
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Error updating avatar",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const updateProfile = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('No user');
-
-      await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          username: profile.username,
-          updated_at: new Date().toISOString(),
-        });
-
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        username: profile.username,
+        updated_at: new Date().toISOString()
+      });
       toast({
         title: "Success",
-        description: "Profile updated successfully",
+        description: "Profile updated successfully"
       });
     } catch (error) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Error updating profile",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const {
+        error
+      } = await supabase.auth.signOut();
       if (error) throw error;
-      
       toast({
         title: "Success",
-        description: "Logged out successfully",
+        description: "Logged out successfully"
       });
       navigate('/');
     } catch (error) {
       toast({
-        title: "Error", 
+        title: "Error",
         description: error instanceof Error ? error.message : "Error logging out",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const openChangePasswordDialog = () => {
-    setPassword({ current: "", new: "", confirm: "" });
+    setPassword({
+      current: "",
+      new: "",
+      confirm: ""
+    });
     setPasswordError("");
     setIsPasswordDialogOpen(true);
   };
-
   const changePassword = async () => {
     try {
       setPasswordError("");
-      
       if (password.new !== password.confirm) {
         setPasswordError("New passwords don't match");
         return;
       }
-      
       if (password.new.length < 6) {
         setPasswordError("Password must be at least 6 characters");
         return;
       }
-      
       setLoading(true);
-      
+
       // Update password with Supabase
-      const { error } = await supabase.auth.updateUser({
+      const {
+        error
+      } = await supabase.auth.updateUser({
         password: password.new
       });
-      
       if (error) throw error;
-      
       setIsPasswordDialogOpen(false);
       toast({
         title: "Success",
-        description: "Password changed successfully",
+        description: "Password changed successfully"
       });
     } catch (error) {
       console.error("Error changing password:", error);
@@ -253,9 +251,7 @@ const Profile = () => {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="max-w-2xl mx-auto space-y-8">
+  return <div className="max-w-2xl mx-auto space-y-8">
       <h2 className="text-2xl font-semibold">Profile Settings</h2>
       
       <div className="glass-card p-6 rounded-xl backdrop-blur-sm bg-card/70 space-y-6 shadow-md">
@@ -276,46 +272,27 @@ const Profile = () => {
             </div>
           </div>
           <div className="space-y-1 text-center sm:text-left">
-            <h3 className="text-xl font-medium">{profile.username || "User"}</h3>
+            <h3 className="font-semibold text-2xl text-left">{profile.username || "User"}</h3>
             <p className="text-muted-foreground text-sm">Tap on the avatar to change your profile picture</p>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={uploadAvatar}
-              disabled={loading}
-              className="hidden"
-              id="avatar-upload"
-              ref={fileInputRef}
-            />
+            <Input type="file" accept="image/*" onChange={uploadAvatar} disabled={loading} className="hidden" id="avatar-upload" ref={fileInputRef} />
           </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="username" className="text-base">Username</Label>
-          <Input
-            id="username"
-            value={profile.username}
-            onChange={(e) => setProfile(prev => ({ ...prev, username: e.target.value }))}
-            placeholder="Enter username"
-            className="h-11"
-          />
+          <Input id="username" value={profile.username} onChange={e => setProfile(prev => ({
+          ...prev,
+          username: e.target.value
+        }))} placeholder="Enter username" className="h-11" />
         </div>
 
         <div className="space-y-4 pt-2">
-          <Button 
-            variant="outline" 
-            className="w-full justify-start gap-2 h-11 text-base"
-            onClick={openChangePasswordDialog}
-          >
+          <Button variant="outline" className="w-full justify-start gap-2 h-11 text-base" onClick={openChangePasswordDialog}>
             <Key className="h-5 w-5" />
             Change Password
           </Button>
           
-          <Button 
-            variant="outline" 
-            className="w-full justify-start gap-2 h-11 text-base"
-            onClick={handleLogout}
-          >
+          <Button variant="outline" className="w-full justify-start gap-2 h-11 text-base" onClick={handleLogout}>
             <LogOut className="h-5 w-5" />
             Sign Out
           </Button>
@@ -328,19 +305,7 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="glass-card p-6 rounded-xl backdrop-blur-sm bg-card/70 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Stats</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-secondary/50 rounded-xl shadow-sm">
-            <div className="text-3xl font-bold">{profile.points}</div>
-            <div className="text-muted-foreground">Total Points</div>
-          </div>
-          <div className="p-4 bg-secondary/50 rounded-xl shadow-sm">
-            <div className="text-3xl font-bold">{profile.streak}</div>
-            <div className="text-muted-foreground">Current Streak</div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Password Change Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
@@ -349,52 +314,35 @@ const Profile = () => {
             <DialogTitle>Change Password</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {passwordError && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+            {passwordError && <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
                 <X className="h-4 w-4" />
                 {passwordError}
-              </div>
-            )}
+              </div>}
             <div className="space-y-2">
               <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={password.new}
-                onChange={(e) => setPassword(prev => ({ ...prev, new: e.target.value }))}
-                placeholder="Enter new password"
-              />
+              <Input id="new-password" type="password" value={password.new} onChange={e => setPassword(prev => ({
+              ...prev,
+              new: e.target.value
+            }))} placeholder="Enter new password" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={password.confirm}
-                onChange={(e) => setPassword(prev => ({ ...prev, confirm: e.target.value }))}
-                placeholder="Confirm new password"
-              />
+              <Input id="confirm-password" type="password" value={password.confirm} onChange={e => setPassword(prev => ({
+              ...prev,
+              confirm: e.target.value
+            }))} placeholder="Confirm new password" />
             </div>
           </div>
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsPasswordDialogOpen(false)}
-              disabled={loading}
-            >
+            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button 
-              onClick={changePassword}
-              disabled={loading || !password.new || !password.confirm}
-            >
+            <Button onClick={changePassword} disabled={loading || !password.new || !password.confirm}>
               {loading ? "Changing..." : "Change Password"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default Profile;
