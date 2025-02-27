@@ -20,7 +20,6 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Use the supabase client directly to avoid any potential issues
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -32,7 +31,8 @@ const Signup = () => {
         title: "Success",
         description: "Check your email to confirm your account!",
       });
-      navigate('/app');
+      // Navigate to the app home route
+      navigate('/app/');
     } catch (error) {
       toast({
         title: "Error",

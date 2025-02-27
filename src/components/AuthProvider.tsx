@@ -27,12 +27,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
-
-        if (event === 'SIGNED_IN') {
-          window.location.href = '/app';
-        } else if (event === 'SIGNED_OUT') {
-          window.location.href = '/';
-        }
       }
     );
 
@@ -43,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [setTheme]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>

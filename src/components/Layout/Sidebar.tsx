@@ -11,13 +11,13 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: Calendar, label: "Daily", path: "/daily" },
-    { icon: Tags, label: "Tags", path: "/tags" },
-    { icon: Heart, label: "Favorites", path: "/favorites" },
-    { icon: Activity, label: "Streak", path: "/streak" },
-    { icon: User, label: "Profile", path: "/profile" },
-    { icon: Trash2, label: "Trash", path: "/trash" },
+    { icon: Home, label: "Home", path: "/app" },
+    { icon: Calendar, label: "Daily", path: "/app/daily" },
+    { icon: Tags, label: "Tags", path: "/app/tags" },
+    { icon: Heart, label: "Favorites", path: "/app/favorites" },
+    { icon: Activity, label: "Streak", path: "/app/streak" },
+    { icon: User, label: "Profile", path: "/app/profile" },
+    { icon: Trash2, label: "Trash", path: "/app/trash" },
   ];
 
   return (

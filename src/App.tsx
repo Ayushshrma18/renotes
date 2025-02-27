@@ -34,25 +34,86 @@ const App = () => (
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/login" element={<Login />} />
                 <Route
-                  path="/app/*"
+                  path="/app"
                   element={
                     <RequireAuth>
                       <MainLayout>
-                        <Routes>
-                          <Route path="/" element={<Home />} />
-                          <Route path="/daily" element={<Daily />} />
-                          <Route path="/tags" element={<Tags />} />
-                          <Route path="/favorites" element={<Favorites />} />
-                          <Route path="/streak" element={<Streak />} />
-                          <Route path="/profile" element={<Profile />} />
-                          <Route path="/trash" element={<Trash />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
+                        <Home />
                       </MainLayout>
                     </RequireAuth>
                   }
                 />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route
+                  path="/app/"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Home />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/daily"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Daily />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/tags"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Tags />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/favorites"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Favorites />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/streak"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Streak />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/profile"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Profile />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/trash"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Trash />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </div>
