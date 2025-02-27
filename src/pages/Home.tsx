@@ -111,18 +111,18 @@ const Home = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="relative w-96">
-          <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="relative max-w-md w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search notes..."
-            className="pl-10"
+            className="pl-9 h-11 rounded-xl"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button onClick={() => setIsEditorOpen(true)}>
-          <Plus className="h-5 w-5 mr-2" />
+        <Button onClick={() => setIsEditorOpen(true)} className="h-11 rounded-xl gap-2">
+          <Plus className="h-5 w-5" />
           New Note
         </Button>
       </div>
@@ -132,28 +132,38 @@ const Home = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : filteredNotes.length === 0 ? (
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium">No notes found</h3>
+        <div className="text-center py-16 bg-card/50 rounded-xl backdrop-blur-sm border border-border/50">
+          <svg className="mx-auto h-12 w-12 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+          <h3 className="mt-4 text-lg font-medium">No notes found</h3>
           <p className="text-muted-foreground mt-2">
             {searchQuery 
               ? "Try adjusting your search query" 
               : "Create your first note by clicking the 'New Note' button"}
           </p>
+          {!searchQuery && (
+            <Button onClick={() => setIsEditorOpen(true)} className="mt-4 rounded-xl gap-2">
+              <Plus className="h-4 w-4" />
+              New Note
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredNotes.map((note) => (
             <div
               key={note.id}
-              className="note-card group cursor-pointer"
+              className="glass-card p-4 rounded-xl backdrop-blur-sm bg-card/70 hover:bg-card/90 transition-colors group cursor-pointer"
               onClick={() => handleNoteClick(note)}
             >
               <div className="flex justify-between items-start">
-                <h3 className="text-lg font-semibold mb-2">{note.title}</h3>
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <h3 className="text-lg font-semibold mb-2 line-clamp-1">{note.title}</h3>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-8 w-8 p-0 rounded-full"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleToggleFavorite(note.id);
@@ -161,13 +171,14 @@ const Home = () => {
                   >
                     <Heart
                       className={`h-4 w-4 ${
-                        note.isFavorite ? "fill-current text-red-500" : ""
+                        note.isFavorite ? "fill-red-500 text-red-500" : ""
                       }`}
                     />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-8 w-8 p-0 rounded-full"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDelete(note.id);
@@ -177,19 +188,22 @@ const Home = () => {
                   </Button>
                 </div>
               </div>
-              <p className="text-muted-foreground line-clamp-3">{note.content}</p>
+              <p className="text-muted-foreground line-clamp-3 mb-3">{note.content}</p>
               {note.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {note.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-2 py-1 text-xs rounded-full bg-secondary"
+                      className="px-2 py-0.5 text-xs rounded-full bg-secondary/80 text-secondary-foreground"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
               )}
+              <div className="text-xs text-muted-foreground/70 mt-4">
+                {new Date(note.date).toLocaleDateString()}
+              </div>
             </div>
           ))}
         </div>

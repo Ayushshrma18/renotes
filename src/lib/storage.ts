@@ -172,6 +172,28 @@ export const deleteNote = async (id: string) => {
   }
 };
 
+export const permanentlyDeleteNote = async (id: string) => {
+  // Update local storage
+  const notes = getNotes();
+  const updatedNotes = notes.filter(note => note.id !== id);
+  localStorage.setItem("notes", JSON.stringify(updatedNotes));
+  
+  // Delete from database if user is logged in
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { error } = await supabase
+      .from('notes')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+      
+    if (error) {
+      console.error('Error permanently deleting note from database:', error);
+      throw error;
+    }
+  }
+};
+
 export const restoreNote = async (id: string) => {
   const notes = getNotes();
   const noteIndex = notes.findIndex((note) => note.id === id);

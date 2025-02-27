@@ -1,12 +1,20 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "lucide-react";
+import { User, LogOut, Key, Check, X } from "lucide-react";
 import { supabase } from "@/supabaseClient";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const Profile = () => {
   const [profile, setProfile] = useState({
@@ -16,7 +24,16 @@ const Profile = () => {
     streak: 0,
   });
   const [loading, setLoading] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [password, setPassword] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+  const [passwordError, setPasswordError] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadProfile();
@@ -38,6 +55,12 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Error loading profile:', error);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -119,19 +142,91 @@ const Profile = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: error instanceof Error ? error.message : "Error logging out",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openChangePasswordDialog = () => {
+    setPassword({ current: "", new: "", confirm: "" });
+    setPasswordError("");
+    setIsPasswordDialogOpen(true);
+  };
+
+  const changePassword = async () => {
+    try {
+      setPasswordError("");
+      
+      if (password.new !== password.confirm) {
+        setPasswordError("New passwords don't match");
+        return;
+      }
+      
+      if (password.new.length < 6) {
+        setPasswordError("Password must be at least 6 characters");
+        return;
+      }
+      
+      setLoading(true);
+      
+      // Update password with Supabase
+      const { error } = await supabase.auth.updateUser({
+        password: password.new
+      });
+      
+      if (error) throw error;
+      
+      setIsPasswordDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      setPasswordError(error instanceof Error ? error.message : "Error changing password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <h2 className="text-2xl font-semibold">Profile Settings</h2>
       
-      <div className="glass-card p-6 rounded-lg space-y-6">
-        <div className="flex items-center gap-6">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={profile.avatar_url} />
-            <AvatarFallback>
-              <User className="h-10 w-10" />
-            </AvatarFallback>
-          </Avatar>
-          <div>
+      <div className="glass-card p-6 rounded-xl backdrop-blur-sm bg-card/70 space-y-6 shadow-md">
+        <div className="flex flex-col items-center gap-6 sm:flex-row">
+          <div className="relative">
+            <Avatar className="h-24 w-24 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/50 transition-all" onClick={handleAvatarClick}>
+              <AvatarImage src={profile.avatar_url} />
+              <AvatarFallback className="bg-primary/10">
+                <User className="h-12 w-12 text-primary/50" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1 shadow-md cursor-pointer" onClick={handleAvatarClick}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                <line x1="12" y1="11" x2="12" y2="17"></line>
+                <line x1="9" y1="14" x2="15" y2="14"></line>
+              </svg>
+            </div>
+          </div>
+          <div className="space-y-1 text-center sm:text-left">
+            <h3 className="text-xl font-medium">{profile.username || "User"}</h3>
+            <p className="text-muted-foreground text-sm">Tap on the avatar to change your profile picture</p>
             <Input
               type="file"
               accept="image/*"
@@ -139,45 +234,114 @@ const Profile = () => {
               disabled={loading}
               className="hidden"
               id="avatar-upload"
+              ref={fileInputRef}
             />
-            <Label htmlFor="avatar-upload" className="cursor-pointer">
-              <Button variant="outline" asChild>
-                <span>Change Avatar</span>
-              </Button>
-            </Label>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username" className="text-base">Username</Label>
           <Input
             id="username"
             value={profile.username}
             onChange={(e) => setProfile(prev => ({ ...prev, username: e.target.value }))}
             placeholder="Enter username"
+            className="h-11"
           />
         </div>
 
+        <div className="space-y-4 pt-2">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start gap-2 h-11 text-base"
+            onClick={openChangePasswordDialog}
+          >
+            <Key className="h-5 w-5" />
+            Change Password
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="w-full justify-start gap-2 h-11 text-base"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-5 w-5" />
+            Sign Out
+          </Button>
+        </div>
+
         <div className="pt-4 flex justify-end">
-          <Button onClick={updateProfile} disabled={loading}>
+          <Button onClick={updateProfile} disabled={loading} className="h-11 px-6">
             Save Changes
           </Button>
         </div>
       </div>
 
-      <div className="glass-card p-6 rounded-lg">
+      <div className="glass-card p-6 rounded-xl backdrop-blur-sm bg-card/70 shadow-md">
         <h3 className="text-xl font-semibold mb-4">Stats</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-secondary rounded-lg">
-            <div className="text-2xl font-bold">{profile.points}</div>
+          <div className="p-4 bg-secondary/50 rounded-xl shadow-sm">
+            <div className="text-3xl font-bold">{profile.points}</div>
             <div className="text-muted-foreground">Total Points</div>
           </div>
-          <div className="p-4 bg-secondary rounded-lg">
-            <div className="text-2xl font-bold">{profile.streak}</div>
+          <div className="p-4 bg-secondary/50 rounded-xl shadow-sm">
+            <div className="text-3xl font-bold">{profile.streak}</div>
             <div className="text-muted-foreground">Current Streak</div>
           </div>
         </div>
       </div>
+
+      {/* Password Change Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {passwordError && (
+              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+                <X className="h-4 w-4" />
+                {passwordError}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={password.new}
+                onChange={(e) => setPassword(prev => ({ ...prev, new: e.target.value }))}
+                placeholder="Enter new password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={password.confirm}
+                onChange={(e) => setPassword(prev => ({ ...prev, confirm: e.target.value }))}
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsPasswordDialogOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={changePassword}
+              disabled={loading || !password.new || !password.confirm}
+            >
+              {loading ? "Changing..." : "Change Password"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

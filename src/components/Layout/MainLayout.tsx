@@ -1,24 +1,36 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const MainLayout = ({ children }: { children: React.ReactNode }) => {
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+const MainLayout = ({ children }: MainLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <div className="flex-1">
-        <nav className="h-16 flex items-center px-4 border-b border-border">
-          <button
+      <div className="flex-1 flex flex-col">
+        <header className="h-16 border-b border-border flex items-center px-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-secondary rounded-lg transition-colors"
+            className="mr-4"
           >
-            <Menu className="h-6 w-6" />
-          </button>
-        </nav>
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-semibold">My Journal</h1>
+        </header>
+        <main className="flex-1 p-6 overflow-auto bg-gradient-to-b from-transparent to-background/20 dark:to-background/10">
+          <div className="mx-auto max-w-7xl animate-fade-in">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
