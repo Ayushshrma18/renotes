@@ -43,13 +43,36 @@ const Profile = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
+        // First check if the profiles table exists and has the user's data
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
         
-        if (profile) {
+        if (error) {
+          console.error('Error fetching profile:', error);
+          // If no profile found, create a basic one
+          const defaultProfile = {
+            id: user.id,
+            username: user.email?.split('@')[0] || "User",
+            avatar_url: "",
+            points: 0,
+            streak: 0,
+            updated_at: new Date().toISOString(),
+          };
+          
+          // Try to insert a new profile
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .upsert(defaultProfile);
+            
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+          } else {
+            setProfile(defaultProfile);
+          }
+        } else if (profile) {
           setProfile(profile);
         }
       }
@@ -76,19 +99,44 @@ const Profile = () => {
 
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      const fileName = `avatar-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
 
+      // First check if the bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      let bucketExists = false;
+      
+      if (buckets) {
+        bucketExists = buckets.some(bucket => bucket.name === 'avatars');
+      }
+      
+      // If bucket doesn't exist, try creating it (may require admin privileges)
+      if (!bucketExists) {
+        try {
+          const { data, error } = await supabase.storage.createBucket('avatars', {
+            public: true
+          });
+          if (error) throw error;
+        } catch (error) {
+          console.error('Error creating bucket:', error);
+          // Continue anyway, as the bucket might already exist but not be visible to the user
+        }
+      }
+
+      // Upload the file
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
+      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      await supabase
+      // Update the profile with the new avatar URL
+      const { error: updateError } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
@@ -96,12 +144,15 @@ const Profile = () => {
           updated_at: new Date().toISOString(),
         });
 
+      if (updateError) throw updateError;
+
       setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
       toast({
         title: "Success",
         description: "Avatar updated successfully",
       });
     } catch (error) {
+      console.error('Error uploading avatar:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Error updating avatar",

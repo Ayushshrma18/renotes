@@ -45,10 +45,10 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                   : "hover:bg-secondary/50"
               }`}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-5 w-5 flex-shrink-0" />
               <span
-                className={`ml-3 transition-opacity ${
-                  isOpen ? "opacity-100" : "opacity-0"
+                className={`ml-3 transition-all duration-200 ${
+                  isOpen ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden"
                 }`}
               >
                 {item.label}
