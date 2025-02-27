@@ -24,6 +24,8 @@ import {
 import { saveNote, type Note } from "@/lib/storage";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/components/AuthProvider";
 
 interface NoteEditorProps {
   isOpen: boolean;
@@ -36,6 +38,9 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (note) {
@@ -49,22 +54,54 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
     }
   }, [note]);
 
-  const handleSave = () => {
-    const updatedNote = {
-      id: note?.id || Date.now().toString(),
-      title,
-      content,
-      date: new Date().toISOString(),
-      tags,
-      isFavorite: note?.isFavorite || false,
-    };
-    saveNote(updatedNote);
-    onClose();
+  const handleSave = async () => {
+    if (!title.trim()) {
+      toast({
+        title: "Error",
+        description: "Note title cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const updatedNote = {
+        id: note?.id || crypto.randomUUID(),
+        title,
+        content,
+        date: new Date().toISOString(),
+        tags,
+        isFavorite: note?.isFavorite || false,
+      };
+      
+      await saveNote(updatedNote);
+      
+      toast({
+        title: "Success",
+        description: user 
+          ? "Note saved and synced to cloud" 
+          : "Note saved locally",
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error("Error saving note:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save note",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && newTag.trim()) {
-      setTags([...tags, newTag.trim()]);
+      if (!tags.includes(newTag.trim())) {
+        setTags([...tags, newTag.trim()]);
+      }
       setNewTag("");
     }
   };
@@ -178,7 +215,9 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
             <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save Note</Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Note"}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>

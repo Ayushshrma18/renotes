@@ -1,3 +1,6 @@
+
+import { supabase } from '@/supabaseClient';
+
 export interface Note {
   id: string;
   title: string;
@@ -17,7 +20,9 @@ export interface UserProfile {
   lastNoteDate?: string;
 }
 
-export const saveNote = (note: Note) => {
+// Function to save note to local storage and sync with database
+export const saveNote = async (note: Note) => {
+  // Local storage operations
   const notes = getNotes();
   const existingNoteIndex = notes.findIndex((n) => n.id === note.id);
 
@@ -36,6 +41,93 @@ export const saveNote = (note: Note) => {
   }
 
   localStorage.setItem("notes", JSON.stringify(notes));
+
+  // Sync with database if user is logged in
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    try {
+      // Convert from our local Note format to database format
+      const dbNote = {
+        id: note.id,
+        user_id: user.id,
+        title: note.title,
+        content: note.content,
+        date: new Date(note.date).toISOString(),
+        tags: note.tags,
+        is_favorite: note.isFavorite,
+        points: note.points || 0,
+        deleted_at: note.deletedAt ? new Date(note.deletedAt).toISOString() : null
+      };
+
+      // Upsert note to database
+      const { error } = await supabase
+        .from('notes')
+        .upsert(dbNote, { 
+          onConflict: 'id',
+          ignoreDuplicates: false
+        });
+
+      if (error) {
+        console.error('Error syncing note with database:', error);
+      }
+    } catch (error) {
+      console.error('Error in database operation:', error);
+    }
+  }
+};
+
+// Function to load notes from database and merge with local storage
+export const syncNotesFromDatabase = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return getNotes(); // Return local notes if not logged in
+  }
+
+  try {
+    // Get notes from database
+    const { data: dbNotes, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error fetching notes from database:', error);
+      return getNotes();
+    }
+
+    if (!dbNotes || dbNotes.length === 0) {
+      // No notes in database, sync local notes to database
+      const localNotes = getNotes();
+      if (localNotes.length > 0) {
+        // Upload local notes to database
+        for (const note of localNotes) {
+          await saveNote(note);
+        }
+      }
+      return localNotes;
+    }
+
+    // Convert database notes to our local Note format
+    const formattedNotes: Note[] = dbNotes.map(dbNote => ({
+      id: dbNote.id,
+      title: dbNote.title,
+      content: dbNote.content,
+      date: new Date(dbNote.date).toISOString(),
+      tags: dbNote.tags || [],
+      isFavorite: dbNote.is_favorite,
+      points: dbNote.points,
+      deletedAt: dbNote.deleted_at ? new Date(dbNote.deleted_at).toISOString() : null
+    }));
+
+    // Save to local storage
+    localStorage.setItem("notes", JSON.stringify(formattedNotes));
+    
+    return formattedNotes;
+  } catch (error) {
+    console.error('Error syncing notes from database:', error);
+    return getNotes();
+  }
 };
 
 export const getNotes = (): Note[] => {
@@ -57,30 +149,72 @@ export const getDeletedNotes = (): Note[] => {
   });
 };
 
-export const deleteNote = (id: string) => {
+export const deleteNote = async (id: string) => {
   const notes = getNotes();
   const noteIndex = notes.findIndex((note) => note.id === id);
   if (noteIndex >= 0) {
     notes[noteIndex].deletedAt = new Date().toISOString();
     localStorage.setItem("notes", JSON.stringify(notes));
+    
+    // Sync deletion with database
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { error } = await supabase
+        .from('notes')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Error syncing note deletion with database:', error);
+      }
+    }
   }
 };
 
-export const restoreNote = (id: string) => {
+export const restoreNote = async (id: string) => {
   const notes = getNotes();
   const noteIndex = notes.findIndex((note) => note.id === id);
   if (noteIndex >= 0) {
     notes[noteIndex].deletedAt = null;
     localStorage.setItem("notes", JSON.stringify(notes));
+    
+    // Sync restore with database
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { error } = await supabase
+        .from('notes')
+        .update({ deleted_at: null })
+        .eq('id', id)
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Error syncing note restoration with database:', error);
+      }
+    }
   }
 };
 
-export const toggleFavorite = (id: string) => {
+export const toggleFavorite = async (id: string) => {
   const notes = getNotes();
   const note = notes.find((n) => n.id === id);
   if (note) {
     note.isFavorite = !note.isFavorite;
     localStorage.setItem("notes", JSON.stringify(notes));
+    
+    // Sync favorite status with database
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { error } = await supabase
+        .from('notes')
+        .update({ is_favorite: note.isFavorite })
+        .eq('id', id)
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Error syncing note favorite status with database:', error);
+      }
+    }
   }
 };
 
