@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUp } from "@/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/supabaseClient";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +20,14 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signUp(email, password);
+      // Use the supabase client directly to avoid any potential issues
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+
       toast({
         title: "Success",
         description: "Check your email to confirm your account!",
@@ -32,6 +39,7 @@ const Signup = () => {
         description: error instanceof Error ? error.message : "Failed to sign up",
         variant: "destructive",
       });
+      console.error("Signup error:", error);
     } finally {
       setLoading(false);
     }

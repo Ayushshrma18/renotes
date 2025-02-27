@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { logIn } from "@/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/supabaseClient";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +20,14 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await logIn(email, password);
+      // Use the supabase client directly to avoid any potential issues
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+
       toast({
         title: "Success",
         description: "Logged in successfully!",
@@ -32,6 +39,7 @@ const Login = () => {
         description: error instanceof Error ? error.message : "Failed to login",
         variant: "destructive",
       });
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }

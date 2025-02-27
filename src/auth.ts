@@ -39,11 +39,5 @@ export async function getCurrentUser() {
   return user;
 }
 
-// Auth state change listener
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN') {
-    window.location.href = '/app';
-  } else if (event === 'SIGNED_OUT') {
-    window.location.href = '/';
-  }
-});
+// Remove this listener as it might be causing issues
+// We'll handle navigation in the components instead
