@@ -8,7 +8,6 @@ import { AuthProvider, RequireAuth } from "./components/AuthProvider";
 import { ThemeProvider } from "next-themes";
 import MainLayout from "./components/Layout/MainLayout";
 import Home from "./pages/Home";
-import Daily from "./pages/Daily";
 import Tags from "./pages/Tags";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
@@ -50,16 +49,6 @@ const App = () => (
                     <RequireAuth>
                       <MainLayout>
                         <Home />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/daily"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Daily />
                       </MainLayout>
                     </RequireAuth>
                   }
