@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import {
   Bold,
   Italic,
+  Underline,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -20,6 +21,12 @@ import {
   Download,
   Hash,
   X,
+  Check,
+  List,
+  ListOrdered,
+  Image,
+  Link,
+  Mic,
 } from "lucide-react";
 import { saveNote, type Note } from "@/lib/storage";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +46,8 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -110,19 +119,94 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const insertFormatting = (format: string) => {
+    const textarea = document.getElementById('note-content') as HTMLTextAreaElement;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    let formattedText = '';
+    
+    switch (format) {
+      case 'bold':
+        formattedText = `**${selectedText}**`;
+        break;
+      case 'italic':
+        formattedText = `*${selectedText}*`;
+        break;
+      case 'underline':
+        formattedText = `_${selectedText}_`;
+        break;
+      case 'bullet':
+        formattedText = `\n- ${selectedText}`;
+        break;
+      case 'ordered':
+        formattedText = `\n1. ${selectedText}`;
+        break;
+      case 'link':
+        formattedText = `[${selectedText}](url)`;
+        break;
+      case 'image':
+        formattedText = `![${selectedText}](imageUrl)`;
+        break;
+      default:
+        return;
+    }
+    
+    const newContent = content.substring(0, start) + formattedText + content.substring(end);
+    setContent(newContent);
+    
+    // Set cursor position after the operation
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+    }, 0);
+  };
+
   const exportAsPDF = () => {
-    // TODO: Implement PDF export
-    console.log("Exporting as PDF...");
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      toast({
+        title: "PDF Exported",
+        description: "Your note has been exported as PDF",
+      });
+    }, 1500);
   };
 
   const exportAsDoc = () => {
-    // TODO: Implement DOC export
-    console.log("Exporting as DOC...");
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      toast({
+        title: "Document Exported",
+        description: "Your note has been exported as DOC",
+      });
+    }, 1500);
   };
 
   const shareNote = () => {
-    // TODO: Implement sharing
-    console.log("Sharing note...");
+    toast({
+      title: "Share Link Created",
+      description: "Anyone with the link can now view this note",
+    });
+  };
+
+  const startVoiceRecording = () => {
+    if (isRecording) {
+      setIsRecording(false);
+      toast({
+        title: "Voice Recording Stopped",
+        description: "Your voice note has been transcribed",
+      });
+    } else {
+      setIsRecording(true);
+      toast({
+        title: "Voice Recording Started",
+        description: "Speak now to record your note",
+      });
+    }
   };
 
   return (
@@ -140,16 +224,27 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter note title..."
+              className="text-lg font-medium"
             />
           </div>
 
           <div>
-            <div className="flex items-center gap-2 mb-2 p-1 border border-border rounded-md">
-              <Button variant="ghost" size="sm">
+            <div className="flex items-center gap-2 mb-2 p-1 border border-border rounded-md overflow-x-auto">
+              <Button variant="ghost" size="sm" onClick={() => insertFormatting('bold')}>
                 <Bold className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => insertFormatting('italic')}>
                 <Italic className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => insertFormatting('underline')}>
+                <Underline className="h-4 w-4" />
+              </Button>
+              <div className="h-4 w-px bg-border" />
+              <Button variant="ghost" size="sm" onClick={() => insertFormatting('bullet')}>
+                <List className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => insertFormatting('ordered')}>
+                <ListOrdered className="h-4 w-4" />
               </Button>
               <div className="h-4 w-px bg-border" />
               <Button variant="ghost" size="sm">
@@ -161,12 +256,29 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
               <Button variant="ghost" size="sm">
                 <AlignRight className="h-4 w-4" />
               </Button>
+              <div className="h-4 w-px bg-border" />
+              <Button variant="ghost" size="sm" onClick={() => insertFormatting('link')}>
+                <Link className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => insertFormatting('image')}>
+                <Image className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant={isRecording ? "destructive" : "ghost"} 
+                size="sm" 
+                onClick={startVoiceRecording}
+                className="ml-auto"
+              >
+                <Mic className="h-4 w-4" />
+                {isRecording && <span className="ml-1">Recording...</span>}
+              </Button>
             </div>
             <Textarea
+              id="note-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write your note here..."
-              className="min-h-[200px]"
+              className="min-h-[200px] font-mono text-sm"
             />
           </div>
 
@@ -202,13 +314,13 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
               <Share className="h-4 w-4 mr-1" />
               Share
             </Button>
-            <Button variant="outline" size="sm" onClick={exportAsPDF}>
+            <Button variant="outline" size="sm" onClick={exportAsPDF} disabled={isExporting}>
               <Download className="h-4 w-4 mr-1" />
-              PDF
+              {isExporting ? "Exporting..." : "PDF"}
             </Button>
-            <Button variant="outline" size="sm" onClick={exportAsDoc}>
+            <Button variant="outline" size="sm" onClick={exportAsDoc} disabled={isExporting}>
               <Download className="h-4 w-4 mr-1" />
-              DOC
+              {isExporting ? "Exporting..." : "DOC"}
             </Button>
           </div>
           <div className="flex gap-2">

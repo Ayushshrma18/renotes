@@ -11,8 +11,9 @@ import Home from "./pages/Home";
 import Daily from "./pages/Daily";
 import Tags from "./pages/Tags";
 import Favorites from "./pages/Favorites";
-import Streak from "./pages/Streak";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import Vault from "./pages/Vault";
 import Trash from "./pages/Trash";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -84,11 +85,11 @@ const App = () => (
                   }
                 />
                 <Route
-                  path="/app/streak"
+                  path="/app/vault"
                   element={
                     <RequireAuth>
                       <MainLayout>
-                        <Streak />
+                        <Vault />
                       </MainLayout>
                     </RequireAuth>
                   }
@@ -99,6 +100,16 @@ const App = () => (
                     <RequireAuth>
                       <MainLayout>
                         <Profile />
+                      </MainLayout>
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/settings"
+                  element={
+                    <RequireAuth>
+                      <MainLayout>
+                        <Settings />
                       </MainLayout>
                     </RequireAuth>
                   }

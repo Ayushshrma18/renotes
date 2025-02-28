@@ -24,7 +24,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">My Journal</h1>
+          <h1 className="text-xl font-semibold">BFound</h1>
         </header>
         <main className="flex-1 p-6 overflow-auto bg-gradient-to-b from-transparent to-background/20 dark:to-background/10">
           <div className="mx-auto max-w-7xl animate-fade-in">

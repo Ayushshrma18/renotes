@@ -21,8 +21,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Check for user preference
     const theme = localStorage.getItem('theme') || 'light';
     setTheme(theme);
+    
+    // Apply settings from localStorage if available
+    const settings = localStorage.getItem('settings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      if (parsedSettings.darkMode) {
+        setTheme('dark');
+      }
+    }
 
-    // Set up auth listener
+    // Set up auth listener with persistence
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null);
@@ -30,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Initial session check
+    // Initial session check with persistence
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -55,11 +64,13 @@ export const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>;
   }
 
   if (!user) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

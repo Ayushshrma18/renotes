@@ -1,5 +1,5 @@
 
-import { Home, Calendar, Tags, Heart, Activity, User, Trash2 } from "lucide-react";
+import { Home, Calendar, Tags, Heart, User, Trash2, Lock, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
@@ -15,8 +15,9 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
     { icon: Calendar, label: "Daily", path: "/app/daily" },
     { icon: Tags, label: "Tags", path: "/app/tags" },
     { icon: Heart, label: "Favorites", path: "/app/favorites" },
-    { icon: Activity, label: "Streak", path: "/app/streak" },
+    { icon: Lock, label: "Vault", path: "/app/vault" },
     { icon: User, label: "Profile", path: "/app/profile" },
+    { icon: Settings, label: "Settings", path: "/app/settings" },
     { icon: Trash2, label: "Trash", path: "/app/trash" },
   ];
 
@@ -32,7 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
             isOpen ? "opacity-100" : "opacity-0"
           }`}
         >
-          Journal
+          BFound
         </h1>
         <nav className="space-y-2">
           {menuItems.map((item) => (

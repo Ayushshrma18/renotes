@@ -1,19 +1,30 @@
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Heart, Trash2 } from "lucide-react";
+import { Plus, Search, Heart, Trash2, Bookmark, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import NoteEditor from "@/components/NoteEditor";
+import NoteView from "@/components/NoteView";
 import { getNotes, toggleFavorite, deleteNote, type Note, syncNotesFromDatabase } from "@/lib/storage";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/AuthProvider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [notes, setNotes] = useState<Note[]>([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -35,6 +46,14 @@ const Home = () => {
           const savedNotes = getNotes();
           setNotes(savedNotes);
         }
+        
+        // Extract all unique tags
+        const allTags = getNotes()
+          .filter(note => !note.deletedAt) // Only active notes
+          .flatMap(note => note.tags)
+          .filter((tag, index, self) => self.indexOf(tag) === index); // Remove duplicates
+          
+        setAvailableTags(allTags);
       } catch (error) {
         console.error("Error loading notes:", error);
         toast({
@@ -55,20 +74,38 @@ const Home = () => {
 
   const handleNoteClick = (note: Note) => {
     setSelectedNote(note);
+    setIsViewerOpen(true);
+  };
+
+  const handleEditorOpen = () => {
+    setSelectedNote(null);
     setIsEditorOpen(true);
   };
 
   const handleEditorClose = () => {
     setIsEditorOpen(false);
-    setSelectedNote(null);
     // Refresh notes list
-    setNotes(getNotes());
+    setNotes(getNotes().filter(note => !note.deletedAt));
+    
+    // Refresh available tags
+    const allTags = getNotes()
+      .filter(note => !note.deletedAt) // Only active notes
+      .flatMap(note => note.tags)
+      .filter((tag, index, self) => self.indexOf(tag) === index); // Remove duplicates
+      
+    setAvailableTags(allTags);
+  };
+
+  const handleViewerClose = () => {
+    setIsViewerOpen(false);
+    // Refresh notes list after viewing (in case edits were made)
+    setNotes(getNotes().filter(note => !note.deletedAt));
   };
 
   const handleToggleFavorite = async (noteId: string) => {
     try {
       await toggleFavorite(noteId);
-      setNotes(getNotes());
+      setNotes(getNotes().filter(note => !note.deletedAt));
       toast({
         title: "Note updated",
         description: "Note has been added to favorites",
@@ -86,7 +123,7 @@ const Home = () => {
   const handleDelete = async (noteId: string) => {
     try {
       await deleteNote(noteId);
-      setNotes(getNotes());
+      setNotes(getNotes().filter(note => !note.deletedAt));
       toast({
         title: "Note moved to trash",
         description: "Note will be permanently deleted after 14 days",
@@ -101,27 +138,75 @@ const Home = () => {
     }
   };
 
+  const toggleTagFilter = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag) 
+        : [...prev, tag]
+    );
+  };
+
   const filteredNotes = notes.filter(
-    (note) =>
-      !note.deletedAt &&
-      (note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        note.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+    (note) => {
+      // First filter by search query
+      const matchesSearch = !note.deletedAt &&
+        (note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         note.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+      
+      // Then filter by selected tags (if any)
+      const matchesTags = selectedTags.length === 0 || 
+        selectedTags.every(tag => note.tags.includes(tag));
+      
+      return matchesSearch && matchesTags;
+    }
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="relative max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search notes..."
-            className="pl-9 h-11 rounded-xl"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex gap-2 w-full max-w-xl">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search notes..."
+              className="pl-9 h-11 rounded-xl"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-11 gap-2">
+                <Filter className="h-4 w-4" />
+                <span>Filter</span>
+                {selectedTags.length > 0 && (
+                  <Badge variant="secondary" className="rounded-full px-1 min-w-[1.25rem] h-5 flex items-center justify-center">
+                    {selectedTags.length}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {availableTags.length > 0 ? (
+                availableTags.map(tag => (
+                  <DropdownMenuCheckboxItem
+                    key={tag}
+                    checked={selectedTags.includes(tag)}
+                    onCheckedChange={() => toggleTagFilter(tag)}
+                  >
+                    {tag}
+                  </DropdownMenuCheckboxItem>
+                ))
+              ) : (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                  No tags available
+                </div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <Button onClick={() => setIsEditorOpen(true)} className="h-11 rounded-xl gap-2">
+        <Button onClick={handleEditorOpen} className="h-11 rounded-xl gap-2">
           <Plus className="h-5 w-5" />
           New Note
         </Button>
@@ -138,12 +223,12 @@ const Home = () => {
           </svg>
           <h3 className="mt-4 text-lg font-medium">No notes found</h3>
           <p className="text-muted-foreground mt-2">
-            {searchQuery 
-              ? "Try adjusting your search query" 
+            {searchQuery || selectedTags.length > 0
+              ? "Try adjusting your search or filters" 
               : "Create your first note by clicking the 'New Note' button"}
           </p>
-          {!searchQuery && (
-            <Button onClick={() => setIsEditorOpen(true)} className="mt-4 rounded-xl gap-2">
+          {!searchQuery && selectedTags.length === 0 && (
+            <Button onClick={handleEditorOpen} className="mt-4 rounded-xl gap-2">
               <Plus className="h-4 w-4" />
               New Note
             </Button>
@@ -212,6 +297,12 @@ const Home = () => {
       <NoteEditor
         isOpen={isEditorOpen}
         onClose={handleEditorClose}
+        note={selectedNote}
+      />
+      
+      <NoteView
+        isOpen={isViewerOpen}
+        onClose={handleViewerClose}
         note={selectedNote}
       />
     </div>
