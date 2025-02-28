@@ -83,6 +83,9 @@ const Login = () => {
         provider: 'github',
         options: {
           redirectTo: window.location.origin + '/app',
+          queryParams: {
+            client_id: "Ov23li9zBtlYbVirdd0W"
+          }
         }
       });
       
