@@ -59,6 +59,7 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          clientId: "141814536837-isqoo0opk89r7eiem36vltgn4tnra74e.apps.googleusercontent.com",
           redirectTo: window.location.origin + '/app',
         }
       });
