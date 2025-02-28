@@ -24,10 +24,6 @@ const Signup = () => {
         email,
         password,
         options: {
-          // Set session to persist for 30 days
-          session: {
-            persistSession: true
-          },
           data: {
             username: email.split('@')[0],
           }

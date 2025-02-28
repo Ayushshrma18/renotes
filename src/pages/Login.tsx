@@ -22,13 +22,7 @@ const Login = () => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
-        options: {
-          // Set session to persist for 30 days
-          session: {
-            persistSession: true
-          }
-        }
+        password
       });
       
       if (error) throw error;
