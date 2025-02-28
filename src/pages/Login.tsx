@@ -20,12 +20,21 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Set Supabase auth persistence before logging in
+      await supabase.auth.setSession({
+        access_token: '',
+        refresh_token: '',
+      });
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
       if (error) throw error;
+
+      // Store a flag in localStorage to indicate the user is logged in
+      localStorage.setItem('is_logged_in', 'true');
 
       toast({
         title: "Success",

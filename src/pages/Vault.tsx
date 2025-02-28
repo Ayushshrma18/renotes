@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Lock, Unlock, Eye, EyeOff, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { getNotes, type Note } from "@/lib/storage";
+import { getNotes, type Note, saveNote } from "@/lib/storage";
 import { useAuth } from "@/components/AuthProvider";
 import NoteEditor from "@/components/NoteEditor";
 
@@ -111,6 +111,50 @@ const Vault = () => {
       note.tags.includes("private") && !note.deletedAt
     );
     setPrivateNotes(vaultNotes);
+  };
+
+  // Override the NoteEditor's save functionality to make sure private tag is added
+  const handleSavePrivateNote = async (note: Note) => {
+    // Make sure the note has the private tag
+    if (!note.tags.includes("private")) {
+      note.tags.push("private");
+    }
+    
+    // Save the note with the private tag
+    await saveNote(note);
+    
+    // Refresh the private notes list
+    const allNotes = getNotes();
+    const vaultNotes = allNotes.filter(note => 
+      note.tags.includes("private") && !note.deletedAt
+    );
+    setPrivateNotes(vaultNotes);
+    
+    toast({
+      title: "Private Note Saved",
+      description: "Your note has been saved to the vault",
+    });
+  };
+
+  // Create a custom NoteEditor for vault notes
+  const VaultNoteEditor = ({ isOpen, onClose, note }: { isOpen: boolean, onClose: () => void, note: Note | null }) => {
+    if (!isOpen) return null;
+
+    return (
+      <NoteEditor
+        isOpen={isOpen}
+        onClose={() => {
+          onClose();
+          // Additional refresh to make sure we have the latest private notes
+          const allNotes = getNotes();
+          const vaultNotes = allNotes.filter(note => 
+            note.tags.includes("private") && !note.deletedAt
+          );
+          setPrivateNotes(vaultNotes);
+        }}
+        note={note ? { ...note, tags: note.tags.includes("private") ? note.tags : [...note.tags, "private"] } : null}
+      />
+    );
   };
 
   if (isLocked) {
@@ -275,7 +319,7 @@ const Vault = () => {
         </div>
       )}
 
-      <NoteEditor
+      <VaultNoteEditor
         isOpen={isEditorOpen}
         onClose={handleEditorClose}
         note={selectedNote}

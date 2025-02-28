@@ -30,6 +30,9 @@ const Daily = () => {
           allNotes = getActiveNotes();
         }
         
+        // Filter out private/vault notes
+        allNotes = allNotes.filter(note => !note.tags.includes("private"));
+        
         if (date) {
           const selectedDate = date.toISOString().split('T')[0];
           const dailyNotes = allNotes.filter(
@@ -47,9 +50,9 @@ const Daily = () => {
         // Fallback to local storage
         if (date) {
           const selectedDate = date.toISOString().split('T')[0];
-          const dailyNotes = getActiveNotes().filter(
-            note => note.date.split('T')[0] === selectedDate
-          );
+          const dailyNotes = getActiveNotes()
+            .filter(note => !note.tags.includes("private"))
+            .filter(note => note.date.split('T')[0] === selectedDate);
           setNotes(dailyNotes);
         }
       } finally {
@@ -76,9 +79,9 @@ const Daily = () => {
     // Refresh notes for the selected date
     if (date) {
       const selectedDate = date.toISOString().split('T')[0];
-      const dailyNotes = getActiveNotes().filter(
-        note => note.date.split('T')[0] === selectedDate
-      );
+      const dailyNotes = getActiveNotes()
+        .filter(note => !note.tags.includes("private"))
+        .filter(note => note.date.split('T')[0] === selectedDate);
       setNotes(dailyNotes);
     }
   };

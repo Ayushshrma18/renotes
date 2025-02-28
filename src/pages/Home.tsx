@@ -33,23 +33,28 @@ const Home = () => {
     const loadNotes = async () => {
       setIsLoading(true);
       try {
+        let loadedNotes;
         if (user) {
           // If user is logged in, sync notes from database
-          const syncedNotes = await syncNotesFromDatabase();
-          setNotes(syncedNotes);
+          loadedNotes = await syncNotesFromDatabase();
           toast({
             title: "Notes synced",
             description: "Your notes have been synced from the cloud",
           });
         } else {
           // If not logged in, just load from local storage
-          const savedNotes = getNotes();
-          setNotes(savedNotes);
+          loadedNotes = getNotes();
         }
         
-        // Extract all unique tags
-        const allTags = getNotes()
-          .filter(note => !note.deletedAt) // Only active notes
+        // Filter out private notes from the notes list
+        loadedNotes = loadedNotes.filter(note => 
+          !note.deletedAt && !note.tags.includes("private")
+        );
+        
+        setNotes(loadedNotes);
+        
+        // Extract all unique tags from non-private notes
+        const allTags = loadedNotes
           .flatMap(note => note.tags)
           .filter((tag, index, self) => self.indexOf(tag) === index); // Remove duplicates
           
@@ -62,7 +67,8 @@ const Home = () => {
           variant: "destructive",
         });
         // Fallback to local storage
-        const savedNotes = getNotes();
+        const savedNotes = getNotes()
+          .filter(note => !note.deletedAt && !note.tags.includes("private"));
         setNotes(savedNotes);
       } finally {
         setIsLoading(false);
@@ -84,12 +90,14 @@ const Home = () => {
 
   const handleEditorClose = () => {
     setIsEditorOpen(false);
-    // Refresh notes list
-    setNotes(getNotes().filter(note => !note.deletedAt));
+    // Refresh notes list with non-private notes
+    const updatedNotes = getNotes().filter(note => 
+      !note.deletedAt && !note.tags.includes("private")
+    );
+    setNotes(updatedNotes);
     
     // Refresh available tags
-    const allTags = getNotes()
-      .filter(note => !note.deletedAt) // Only active notes
+    const allTags = updatedNotes
       .flatMap(note => note.tags)
       .filter((tag, index, self) => self.indexOf(tag) === index); // Remove duplicates
       
@@ -99,13 +107,19 @@ const Home = () => {
   const handleViewerClose = () => {
     setIsViewerOpen(false);
     // Refresh notes list after viewing (in case edits were made)
-    setNotes(getNotes().filter(note => !note.deletedAt));
+    const updatedNotes = getNotes().filter(note => 
+      !note.deletedAt && !note.tags.includes("private")
+    );
+    setNotes(updatedNotes);
   };
 
   const handleToggleFavorite = async (noteId: string) => {
     try {
       await toggleFavorite(noteId);
-      setNotes(getNotes().filter(note => !note.deletedAt));
+      const updatedNotes = getNotes().filter(note => 
+        !note.deletedAt && !note.tags.includes("private")
+      );
+      setNotes(updatedNotes);
       toast({
         title: "Note updated",
         description: "Note has been added to favorites",
@@ -123,7 +137,10 @@ const Home = () => {
   const handleDelete = async (noteId: string) => {
     try {
       await deleteNote(noteId);
-      setNotes(getNotes().filter(note => !note.deletedAt));
+      const updatedNotes = getNotes().filter(note => 
+        !note.deletedAt && !note.tags.includes("private")
+      );
+      setNotes(updatedNotes);
       toast({
         title: "Note moved to trash",
         description: "Note will be permanently deleted after 14 days",
@@ -149,7 +166,7 @@ const Home = () => {
   const filteredNotes = notes.filter(
     (note) => {
       // First filter by search query
-      const matchesSearch = !note.deletedAt &&
+      const matchesSearch = 
         (note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
          note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
          note.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())));

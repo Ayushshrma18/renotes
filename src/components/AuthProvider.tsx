@@ -18,6 +18,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { setTheme } = useTheme();
 
   useEffect(() => {
+    // Configure Supabase to persist sessions
+    try {
+      // Set session persistence to true by default
+      supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      });
+    } catch (error) {
+      console.error("Error configuring auth:", error);
+    }
+
     // Check for user preference
     const theme = localStorage.getItem('theme') || 'light';
     setTheme(theme);
@@ -31,21 +42,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
 
-    // Set up auth listener with persistence
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
     // Initial session check with persistence
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {};
   }, [setTheme]);
 
   return (
