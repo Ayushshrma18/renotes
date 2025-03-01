@@ -38,8 +38,7 @@ const Signup = () => {
         options: {
           data: {
             username: email.split('@')[0],
-          },
-          emailRedirectTo: `${window.location.origin}/app`
+          }
         }
       });
       
@@ -49,6 +48,7 @@ const Signup = () => {
         title: "Success",
         description: "Check your email to confirm your account!",
       });
+      
       // Navigate to the app home route
       navigate('/app/');
     } catch (error) {
@@ -68,11 +68,7 @@ const Signup = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`,
-          // Add queryParams to pass clientId if needed
-          queryParams: {
-            client_id: "141814536837-isqoo0opk89r7eiem36vltgn4tnra74e.apps.googleusercontent.com"
-          }
+          redirectTo: `${window.location.origin}/app`
         }
       });
       
@@ -91,10 +87,7 @@ const Signup = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/app`,
-          queryParams: {
-            client_id: "Ov23li9zBtlYbVirdd0W"
-          }
+          redirectTo: `${window.location.origin}/app`
         }
       });
       
@@ -129,6 +122,7 @@ const Signup = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="rounded-lg"
             />
           </div>
           <div className="space-y-2">
@@ -139,9 +133,10 @@ const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="rounded-lg"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full rounded-full" disabled={loading}>
             {loading ? "Creating account..." : "Create account"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -157,7 +152,7 @@ const Signup = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" onClick={handleGoogleSignIn} className="w-full">
+          <Button variant="outline" onClick={handleGoogleSignIn} className="w-full rounded-full">
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -178,7 +173,7 @@ const Signup = () => {
             </svg>
             Google
           </Button>
-          <Button variant="outline" onClick={handleGithubSignIn} className="w-full">
+          <Button variant="outline" onClick={handleGithubSignIn} className="w-full rounded-full">
             <Github className="mr-2 h-4 w-4" />
             GitHub
           </Button>

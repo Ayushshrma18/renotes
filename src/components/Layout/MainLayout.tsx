@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,11 +21,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             variant="ghost"
             size="icon"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="mr-4"
+            className="mr-4 rounded-full"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-medium">Renotes</h1>
+          <h1 className="text-xl font-medium flex-1">Renotes</h1>
+          <ThemeToggle />
         </header>
         <main className="flex-1 p-6 overflow-auto">
           <div className="mx-auto max-w-7xl animate-fade-in">

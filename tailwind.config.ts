@@ -67,15 +67,25 @@ export default {
 				'accordion-up': {
 					from: { height: 'var(--radix-accordion-content-height)' },
 					to: { height: '0' }
+				},
+				'fade-in': {
+					from: { opacity: '0' },
+					to: { opacity: '1' }
+				},
+				'slide-up': {
+					from: { transform: 'translateY(10px)', opacity: '0' },
+					to: { transform: 'translateY(0)', opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-in-out',
+				'slide-up': 'slide-up 0.3s ease-out'
 			},
 			fontFamily: {
-				'sans': ['IBM Plex Sans', 'sans-serif'],
-				'mono': ['IBM Plex Mono', 'monospace']
+				'sans': ['var(--font-sans)', 'sans-serif'],
+				'mono': ['var(--font-mono)', 'monospace']
 			}
 		}
 	},

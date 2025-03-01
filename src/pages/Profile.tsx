@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { supabase } from "@/supabaseClient";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+
 const Profile = () => {
   const [profile, setProfile] = useState({
     username: "",
@@ -23,131 +25,112 @@ const Profile = () => {
     confirm: ""
   });
   const [passwordError, setPasswordError] = useState("");
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     loadProfile();
   }, []);
+
   const loadProfile = async () => {
     try {
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
-      if (user) {
-        // First check if the profiles table exists and has the user's data
-        const {
-          data: profile,
-          error
-        } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        if (error) {
-          console.error('Error fetching profile:', error);
-          // If no profile found, create a basic one
-          const defaultProfile = {
-            id: user.id,
-            username: user.email?.split('@')[0] || "User",
-            avatar_url: "",
-            points: 0,
-            streak: 0,
-            updated_at: new Date().toISOString()
-          };
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-          // Try to insert a new profile
-          const {
-            error: insertError
-          } = await supabase.from('profiles').upsert(defaultProfile);
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-          } else {
-            setProfile(defaultProfile);
-          }
-        } else if (profile) {
-          setProfile(profile);
-        }
+      // Get user metadata from auth
+      const { data: { user: userData } } = await supabase.auth.getUser();
+      if (userData && userData.user_metadata && userData.user_metadata.username) {
+        setProfile(prev => ({
+          ...prev,
+          username: userData.user_metadata.username || userData.email?.split('@')[0] || "User",
+          avatar_url: userData.user_metadata.avatar_url || ""
+        }));
+      } else {
+        // Set default profile data from email
+        setProfile(prev => ({
+          ...prev,
+          username: user.email?.split('@')[0] || "User"
+        }));
       }
     } catch (error) {
       console.error('Error loading profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your profile",
+        variant: "destructive"
+      });
     }
   };
+
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
+
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setLoading(true);
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user');
+      
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select an image to upload.');
       }
+      
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `avatar-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      // First check if the bucket exists
-      const {
-        data: buckets
-      } = await supabase.storage.listBuckets();
+      // Check if avatars bucket exists, if not create it
+      const { data: buckets } = await supabase.storage.listBuckets();
       let bucketExists = false;
+      
       if (buckets) {
         bucketExists = buckets.some(bucket => bucket.name === 'avatars');
       }
 
-      // If bucket doesn't exist, try creating it (may require admin privileges)
       if (!bucketExists) {
         try {
-          const {
-            data,
-            error
-          } = await supabase.storage.createBucket('avatars', {
+          const { error } = await supabase.storage.createBucket('avatars', {
             public: true
           });
-          if (error) throw error;
+          if (error) console.error('Error creating bucket:', error);
         } catch (error) {
           console.error('Error creating bucket:', error);
-          // Continue anyway, as the bucket might already exist but not be visible to the user
         }
       }
 
       // Upload the file
-      const {
-        error: uploadError
-      } = await supabase.storage.from('avatars').upload(filePath, file, {
-        upsert: true
-      });
+      const { error: uploadError, data } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          upsert: true
+        });
+        
       if (uploadError) throw uploadError;
 
       // Get the public URL
-      const {
-        data: {
-          publicUrl
-        }
-      } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
 
-      // Update the profile with the new avatar URL
-      const {
-        error: updateError
-      } = await supabase.from('profiles').upsert({
-        id: user.id,
-        avatar_url: publicUrl,
-        updated_at: new Date().toISOString()
+      // Update user metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          avatar_url: publicUrl,
+        }
       });
+      
       if (updateError) throw updateError;
+      
       setProfile(prev => ({
         ...prev,
         avatar_url: publicUrl
       }));
+      
       toast({
         title: "Success",
         description: "Avatar updated successfully"
@@ -163,20 +146,22 @@ const Profile = () => {
       setLoading(false);
     }
   };
+
   const updateProfile = async () => {
     try {
       setLoading(true);
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user');
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        username: profile.username,
-        updated_at: new Date().toISOString()
+      
+      // Update user metadata
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          username: profile.username,
+        }
       });
+      
+      if (error) throw error;
+      
       toast({
         title: "Success",
         description: "Profile updated successfully"
@@ -191,11 +176,10 @@ const Profile = () => {
       setLoading(false);
     }
   };
+
   const handleLogout = async () => {
     try {
-      const {
-        error
-      } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
       if (error) throw error;
       toast({
         title: "Success",
@@ -210,6 +194,7 @@ const Profile = () => {
       });
     }
   };
+
   const openChangePasswordDialog = () => {
     setPassword({
       current: "",
@@ -219,6 +204,7 @@ const Profile = () => {
     setPasswordError("");
     setIsPasswordDialogOpen(true);
   };
+
   const changePassword = async () => {
     try {
       setPasswordError("");
@@ -233,12 +219,12 @@ const Profile = () => {
       setLoading(true);
 
       // Update password with Supabase
-      const {
-        error
-      } = await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         password: password.new
       });
+      
       if (error) throw error;
+      
       setIsPasswordDialogOpen(false);
       toast({
         title: "Success",
@@ -251,7 +237,9 @@ const Profile = () => {
       setLoading(false);
     }
   };
-  return <div className="max-w-2xl mx-auto space-y-8">
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-8">
       <h2 className="text-2xl font-semibold">Profile Settings</h2>
       
       <div className="glass-card p-6 rounded-xl backdrop-blur-sm bg-card/70 space-y-6 shadow-md">
@@ -280,19 +268,25 @@ const Profile = () => {
 
         <div className="space-y-2">
           <Label htmlFor="username" className="text-base">Username</Label>
-          <Input id="username" value={profile.username} onChange={e => setProfile(prev => ({
-          ...prev,
-          username: e.target.value
-        }))} placeholder="Enter username" className="h-11" />
+          <Input 
+            id="username" 
+            value={profile.username} 
+            onChange={e => setProfile(prev => ({
+              ...prev,
+              username: e.target.value
+            }))} 
+            placeholder="Enter username" 
+            className="h-11 rounded-lg" 
+          />
         </div>
 
         <div className="space-y-4 pt-2">
-          <Button variant="outline" className="w-full justify-start gap-2 h-11 text-base" onClick={openChangePasswordDialog}>
+          <Button variant="outline" className="w-full justify-start gap-2 h-11 text-base rounded-lg" onClick={openChangePasswordDialog}>
             <Key className="h-5 w-5" />
             Change Password
           </Button>
           
-          <Button variant="outline" className="w-full justify-start gap-2 h-11 text-base" onClick={handleLogout}>
+          <Button variant="outline" className="w-full justify-start gap-2 h-11 text-base rounded-lg" onClick={handleLogout}>
             <LogOut className="h-5 w-5" />
             Sign Out
           </Button>
@@ -305,11 +299,9 @@ const Profile = () => {
         </div>
       </div>
 
-      
-
       {/* Password Change Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
             <DialogTitle>Change Password</DialogTitle>
           </DialogHeader>
@@ -320,29 +312,45 @@ const Profile = () => {
               </div>}
             <div className="space-y-2">
               <Label htmlFor="new-password">New Password</Label>
-              <Input id="new-password" type="password" value={password.new} onChange={e => setPassword(prev => ({
-              ...prev,
-              new: e.target.value
-            }))} placeholder="Enter new password" />
+              <Input 
+                id="new-password" 
+                type="password" 
+                value={password.new} 
+                onChange={e => setPassword(prev => ({
+                  ...prev,
+                  new: e.target.value
+                }))} 
+                placeholder="Enter new password" 
+                className="rounded-lg"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input id="confirm-password" type="password" value={password.confirm} onChange={e => setPassword(prev => ({
-              ...prev,
-              confirm: e.target.value
-            }))} placeholder="Confirm new password" />
+              <Input 
+                id="confirm-password" 
+                type="password" 
+                value={password.confirm} 
+                onChange={e => setPassword(prev => ({
+                  ...prev,
+                  confirm: e.target.value
+                }))} 
+                placeholder="Confirm new password" 
+                className="rounded-lg"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)} disabled={loading}>
+            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)} disabled={loading} className="rounded-full">
               Cancel
             </Button>
-            <Button onClick={changePassword} disabled={loading || !password.new || !password.confirm}>
+            <Button onClick={changePassword} disabled={loading || !password.new || !password.confirm} className="rounded-full">
               {loading ? "Changing..." : "Change Password"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+  );
 };
+
 export default Profile;

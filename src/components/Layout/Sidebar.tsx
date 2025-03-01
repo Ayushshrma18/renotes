@@ -24,7 +24,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
     <aside
       className={`${
         isOpen ? "w-64" : "w-20"
-      } transition-all duration-300 ease-in-out border-r border-border bg-[#0E1624]`}
+      } transition-all duration-300 ease-in-out border-r border-border bg-background`}
     >
       <div className="p-4">
         <h1
@@ -39,10 +39,10 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center p-3 rounded-sm transition-colors ${
+              className={`flex items-center p-3 rounded-lg transition-colors ${
                 location.pathname === item.path
-                  ? "bg-[#0052CC] text-white"
-                  : "hover:bg-[#1C2B41]"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-secondary"
               }`}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />

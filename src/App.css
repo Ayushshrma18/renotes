@@ -36,21 +36,21 @@
 
 .card {
   padding: 2em;
-  background-color: #1C2B41;
-  border: 1px solid #2C3E50;
-  border-radius: 0.25rem;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
 }
 
 .read-the-docs {
-  color: #c6c6c6;
+  color: var(--muted-foreground);
 }
 
 form {
   margin: 20px;
   padding: 10px;
-  border: 1px solid #2C3E50;
-  border-radius: 0.25rem;
-  background-color: #1C2B41;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background-color: var(--card);
 }
 
 input {
@@ -59,31 +59,31 @@ input {
   padding: 8px;
   width: 100%;
   box-sizing: border-box;
-  background-color: #0E1624;
-  border: 1px solid #2C3E50;
-  color: #f4f4f4;
-  border-radius: 0.25rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: 0.5rem;
 }
 
 button {
   padding: 10px 15px;
-  background-color: #0052CC;
-  color: white;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   border: none;
-  border-radius: 0.25rem;
+  border-radius: 1rem;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #0747A6;
+  background-color: hsl(var(--primary) / 0.9);
 }
 
 #profile-photo-input {
   margin: 20px;
   padding: 10px;
-  border: 1px solid #2C3E50;
-  border-radius: 0.25rem;
-  background-color: #1C2B41;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background-color: var(--card);
 }
 
 #profile-photo {
@@ -92,5 +92,5 @@ button:hover {
   border-radius: 50%;
   margin: 20px;
   object-fit: cover;
-  border: 2px solid #2C3E50;
+  border: 2px solid var(--border);
 }

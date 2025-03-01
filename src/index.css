@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,48 +7,51 @@
 
 @layer base {
   :root {
-    --background: 216 33% 10%;
-    --foreground: 0 0% 98%;
-    --card: 215 28% 17%;
-    --card-foreground: 0 0% 98%;
-    --popover: 217 36% 17%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 212 100% 40%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 214 32% 19%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 215 26% 27%;
-    --muted-foreground: 215 16% 70%;
-    --accent: 212 100% 40%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 212 25% 27%;
-    --input: 212 25% 27%;
-    --ring: 212 93% 45%;
-    --radius: 0.25rem;
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'Space Grotesk', monospace;
+    
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 221 83% 53%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 216 33% 10%;
-    --foreground: 0 0% 98%;
-    --card: 215 28% 17%;
-    --card-foreground: 0 0% 98%;
-    --popover: 217 36% 17%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 212 100% 40%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 214 32% 19%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 215 26% 27%;
-    --muted-foreground: 215 16% 70%;
-    --accent: 212 100% 40%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 212 25% 27%;
-    --input: 212 25% 27%;
-    --ring: 212 93% 45%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 224 76% 48%;
   }
 }
 
@@ -71,8 +74,8 @@
     @apply glass-card p-4 rounded-md transition-all duration-200 hover:shadow-md;
   }
 
-  .carbon-button {
-    @apply rounded-none border-2 px-4 py-2 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  .btn {
+    @apply rounded-full shadow-sm px-4 py-2 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
 }
 
