@@ -27,12 +27,19 @@ import {
   Image,
   Link,
   Mic,
+  ChevronDown,
 } from "lucide-react";
-import { saveNote, type Note } from "@/lib/storage";
+import { saveNote, type Note, getTagsWithCount } from "@/lib/storage";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/AuthProvider";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NoteEditorProps {
   isOpen: boolean;
@@ -48,6 +55,8 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [availableTags, setAvailableTags] = useState<{tag: string; count: number}[]>([]);
+  const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -61,6 +70,9 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
       setContent("");
       setTags([]);
     }
+    
+    // Load available tags
+    setAvailableTags(getTagsWithCount());
   }, [note]);
 
   const handleSave = async () => {
@@ -112,6 +124,12 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
         setTags([...tags, newTag.trim()]);
       }
       setNewTag("");
+    }
+  };
+
+  const addTagFromDropdown = (tag: string) => {
+    if (!tags.includes(tag)) {
+      setTags([...tags, tag]);
     }
   };
 
@@ -295,15 +313,46 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
                 </Badge>
               ))}
             </div>
-            <div className="relative">
-              <Hash className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={handleAddTag}
-                placeholder="Add tags..."
-                className="pl-9"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Hash className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={handleAddTag}
+                  placeholder="Add tags..."
+                  className="pl-9"
+                />
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-popover">
+                  {availableTags.length > 0 ? (
+                    availableTags.map(({ tag }) => (
+                      <DropdownMenuItem
+                        key={tag}
+                        onClick={() => addTagFromDropdown(tag)}
+                        className={tags.includes(tag) ? "bg-muted" : ""}
+                      >
+                        <Hash className="h-4 w-4 mr-2 text-muted-foreground" />
+                        {tag}
+                        {tags.includes(tag) && (
+                          <Check className="h-4 w-4 ml-auto" />
+                        )}
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                      No tags created yet
+                    </div>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
