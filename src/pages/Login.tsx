@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,18 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check if the user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/app/');
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +71,7 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/app',
+          redirectTo: `${window.location.origin}/app`,
           // Add queryParams to pass clientId if needed
           queryParams: {
             client_id: "141814536837-isqoo0opk89r7eiem36vltgn4tnra74e.apps.googleusercontent.com"
@@ -82,7 +94,7 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: window.location.origin + '/app',
+          redirectTo: `${window.location.origin}/app`,
           queryParams: {
             client_id: "Ov23li9zBtlYbVirdd0W"
           }
@@ -106,7 +118,7 @@ const Login = () => {
       </div>
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">BFound</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Renotes</h1>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>
 

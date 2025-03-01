@@ -13,10 +13,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #4589ffaa);
+  filter: drop-shadow(0 0 2em #0052CCaa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #4589ffaa);
+  filter: drop-shadow(0 0 2em #0052CCaa);
 }
 
 @keyframes logo-spin {
@@ -36,8 +36,8 @@
 
 .card {
   padding: 2em;
-  background-color: #262730;
-  border: 1px solid #393939;
+  background-color: #1C2B41;
+  border: 1px solid #2C3E50;
   border-radius: 0.25rem;
 }
 
@@ -48,9 +48,9 @@
 form {
   margin: 20px;
   padding: 10px;
-  border: 1px solid #393939;
+  border: 1px solid #2C3E50;
   border-radius: 0.25rem;
-  background-color: #262730;
+  background-color: #1C2B41;
 }
 
 input {
@@ -59,15 +59,15 @@ input {
   padding: 8px;
   width: 100%;
   box-sizing: border-box;
-  background-color: #161616;
-  border: 1px solid #393939;
+  background-color: #0E1624;
+  border: 1px solid #2C3E50;
   color: #f4f4f4;
   border-radius: 0.25rem;
 }
 
 button {
   padding: 10px 15px;
-  background-color: #0f62fe;
+  background-color: #0052CC;
   color: white;
   border: none;
   border-radius: 0.25rem;
@@ -75,15 +75,15 @@ button {
 }
 
 button:hover {
-  background-color: #0353e9;
+  background-color: #0747A6;
 }
 
 #profile-photo-input {
   margin: 20px;
   padding: 10px;
-  border: 1px solid #393939;
+  border: 1px solid #2C3E50;
   border-radius: 0.25rem;
-  background-color: #262730;
+  background-color: #1C2B41;
 }
 
 #profile-photo {
@@ -92,5 +92,5 @@ button:hover {
   border-radius: 50%;
   margin: 20px;
   object-fit: cover;
-  border: 2px solid #393939;
+  border: 2px solid #2C3E50;
 }

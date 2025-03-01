@@ -57,6 +57,7 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [availableTags, setAvailableTags] = useState<{tag: string; count: number}[]>([]);
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
+  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>('left');
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -100,9 +101,7 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
       
       toast({
         title: "Success",
-        description: user 
-          ? "Note saved and synced to cloud" 
-          : "Note saved locally",
+        description: "Note saved successfully",
       });
       
       onClose();
@@ -182,6 +181,14 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
     }, 0);
   };
 
+  const applyAlignment = (align: 'left' | 'center' | 'right') => {
+    setTextAlign(align);
+    const textarea = document.getElementById('note-content') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.style.textAlign = align;
+    }
+  };
+
   const exportAsPDF = () => {
     setIsExporting(true);
     setTimeout(() => {
@@ -229,7 +236,7 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{note ? "Edit Note" : "New Note"}</DialogTitle>
         </DialogHeader>
@@ -265,13 +272,25 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
                 <ListOrdered className="h-4 w-4" />
               </Button>
               <div className="h-4 w-px bg-border" />
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant={textAlign === 'left' ? "secondary" : "ghost"} 
+                size="sm"
+                onClick={() => applyAlignment('left')}
+              >
                 <AlignLeft className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant={textAlign === 'center' ? "secondary" : "ghost"} 
+                size="sm"
+                onClick={() => applyAlignment('center')}
+              >
                 <AlignCenter className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant={textAlign === 'right' ? "secondary" : "ghost"} 
+                size="sm"
+                onClick={() => applyAlignment('right')}
+              >
                 <AlignRight className="h-4 w-4" />
               </Button>
               <div className="h-4 w-px bg-border" />
@@ -297,6 +316,7 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write your note here..."
               className="min-h-[200px] font-mono text-sm"
+              style={{ textAlign: textAlign }}
             />
           </div>
 

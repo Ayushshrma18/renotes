@@ -9,7 +9,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex">
@@ -24,7 +24,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-medium">BFound</h1>
+          <h1 className="text-xl font-medium">Renotes</h1>
         </header>
         <main className="flex-1 p-6 overflow-auto">
           <div className="mx-auto max-w-7xl animate-fade-in">
