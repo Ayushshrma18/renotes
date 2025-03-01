@@ -15,7 +15,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     <div className="min-h-screen flex">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <div className="flex-1 flex flex-col">
-        <header className="h-16 border-b border-border flex items-center px-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+        <header className="h-16 border-b border-border flex items-center px-4 sticky top-0 bg-background/90 backdrop-blur-md z-10">
           <Button
             variant="ghost"
             size="icon"
@@ -24,9 +24,9 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">BFound</h1>
+          <h1 className="text-xl font-medium">BFound</h1>
         </header>
-        <main className="flex-1 p-6 overflow-auto bg-gradient-to-b from-transparent to-background/20 dark:to-background/10">
+        <main className="flex-1 p-6 overflow-auto">
           <div className="mx-auto max-w-7xl animate-fade-in">
             {children}
           </div>
