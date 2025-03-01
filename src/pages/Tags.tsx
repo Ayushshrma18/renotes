@@ -1,16 +1,22 @@
 
 import { useState, useEffect } from "react";
-import { getTagsWithCount, getNotesByTag, type Note, syncNotesFromDatabase } from "@/lib/storage";
+import { getTagsWithCount, getNotesByTag, type Note, syncNotesFromDatabase, saveNote } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
-import { Hash } from "lucide-react";
+import { Hash, Plus } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import NoteEditor from "@/components/NoteEditor";
 
 const Tags = () => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [tagStats, setTagStats] = useState<{ tag: string; count: number }[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
+  const [isNoteEditorOpen, setIsNoteEditorOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -48,9 +54,47 @@ const Tags = () => {
     }
   }, [selectedTag]);
 
+  const refreshTags = () => {
+    setTagStats(getTagsWithCount());
+  };
+
+  const handleCreateTag = () => {
+    if (!newTagName.trim()) {
+      toast({
+        title: "Error",
+        description: "Tag name cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create a new note with the specified tag
+    setIsCreateTagDialogOpen(false);
+    setIsNoteEditorOpen(true);
+  };
+
+  const handleNoteCreated = () => {
+    setIsNoteEditorOpen(false);
+    refreshTags();
+    // Select the newly created tag
+    setSelectedTag(newTagName.trim());
+    setNewTagName("");
+    
+    toast({
+      title: "Success",
+      description: `Note with tag "${newTagName.trim()}" created successfully`,
+    });
+  };
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Tags</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Tags</h2>
+        <Button onClick={() => setIsCreateTagDialogOpen(true)} size="sm" className="gap-2">
+          <Plus className="h-4 w-4" />
+          Create Tag
+        </Button>
+      </div>
       
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
@@ -60,8 +104,11 @@ const Tags = () => {
         <div className="text-center py-12">
           <h3 className="text-lg font-medium">No tags found</h3>
           <p className="text-muted-foreground mt-2">
-            Add tags to your notes to organize them better
+            Create a new tag to organize your notes better
           </p>
+          <Button onClick={() => setIsCreateTagDialogOpen(true)} className="mt-4">
+            Create Your First Tag
+          </Button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -110,6 +157,56 @@ const Tags = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Create Tag Dialog */}
+      <Dialog open={isCreateTagDialogOpen} onOpenChange={setIsCreateTagDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Tag</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Tag Name</label>
+                <div className="relative mt-1">
+                  <Hash className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    placeholder="Enter tag name"
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Creating a tag will also create your first note with this tag.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateTagDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateTag}>Create Tag</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Note Editor for the new tag */}
+      {isNoteEditorOpen && (
+        <NoteEditor
+          isOpen={isNoteEditorOpen}
+          onClose={handleNoteCreated}
+          note={{
+            id: crypto.randomUUID(),
+            title: "",
+            content: "",
+            date: new Date().toISOString(),
+            tags: [newTagName.trim()],
+            isFavorite: false
+          }}
+        />
       )}
     </div>
   );

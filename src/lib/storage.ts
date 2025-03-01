@@ -1,4 +1,3 @@
-
 import { supabase } from '@/supabaseClient';
 
 export interface Note {
@@ -136,7 +135,7 @@ export const getNotes = (): Note[] => {
 };
 
 export const getActiveNotes = (): Note[] => {
-  return getNotes().filter((note) => !note.deletedAt);
+  return getNotes().filter((note) => !note.deletedAt && !note.tags.includes("private"));
 };
 
 export const getDeletedNotes = (): Note[] => {
