@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -105,7 +104,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
       setTags(note.tags);
       setIsPublished(note.isPublished || false);
       
-      // Set the text alignment based on stored content
       if (note.content.includes('text-align: center')) {
         setTextAlign('center');
       } else if (note.content.includes('text-align: right')) {
@@ -114,7 +112,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
         setTextAlign('left');
       }
       
-      // Generate share link if published
       if (note.isPublished && note.shareId) {
         const baseUrl = window.location.origin;
         setShareLink(`${baseUrl}/shared/${note.shareId}`);
@@ -130,23 +127,14 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
       setShareLink(null);
     }
     
-    // Load available tags
     setAvailableTags(getTagsWithCount());
     
-    // Apply text alignment to textarea
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.style.textAlign = textAlign;
       }
     }, 0);
   }, [note, isOpen]);
-
-  // Apply text alignment when it changes
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.textAlign = textAlign;
-    }
-  }, [textAlign]);
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -173,7 +161,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
       
       await saveNote(updatedNote);
       
-      // Show cloud sync message if enabled and not previously dismissed
       if (settings.syncEnabled && user && !syncMessageShown) {
         toast({
           title: "Note synced to cloud",
@@ -308,7 +295,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
     const newContent = content.substring(0, start) + formattedText + content.substring(end);
     setContent(newContent);
     
-    // Set cursor position after the operation
     setTimeout(() => {
       textarea.focus();
       const newPosition = start + formattedText.length - cursorOffset;
@@ -388,7 +374,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
 
   const shareNote = () => {
     if (!shareLink) {
-      // If not published yet, publish first
       if (!isPublished) {
         handleTogglePublish();
         return;
@@ -402,7 +387,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
       return;
     }
     
-    // Copy to clipboard
     navigator.clipboard.writeText(shareLink).then(() => {
       toast({
         title: "Link Copied",
@@ -419,7 +403,7 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   };
 
   const startVoiceRecording = () => {
-    if (!navigator.mediaDevices || !window.SpeechRecognition) {
+    if (!navigator.mediaDevices) {
       toast({
         title: "Not Supported",
         description: "Voice recording is not supported in your browser",
@@ -430,7 +414,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
     
     if (isRecording) {
       setIsRecording(false);
-      // Mock transcription
       const transcription = "This is a mock transcription of your voice note. In a real implementation, this would be the actual transcription from the Web Speech API.";
       setContent(prev => prev + "\n\n" + transcription);
       toast({
@@ -453,7 +436,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
     }
     
     try {
-      // Search for users
       const results = await searchUsers(query);
       setSearchResults(results);
     } catch (error) {
@@ -469,7 +451,6 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
 
   const handleUserMention = (username: string) => {
     insertFormatting('mention');
-    // Replace the '@' with the full username
     const currentPos = textareaRef.current?.selectionStart || 0;
     const textBefore = content.substring(0, currentPos - 1);
     const textAfter = content.substring(currentPos);
@@ -489,21 +470,20 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   const handleClearFormatting = () => {
     if (!window.confirm("Are you sure you want to clear all formatting?")) return;
     
-    // Strip markdown formatting
     let plainText = content
-      .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
-      .replace(/\*(.*?)\*/g, '$1') // Italic
-      .replace(/__(.*?)__/g, '$1') // Underline
-      .replace(/```([\s\S]*?)```/g, '$1') // Code blocks
-      .replace(/`(.*?)`/g, '$1') // Inline code
-      .replace(/#{1,6}\s(.*?)(\n|$)/g, '$1$2') // Headers
-      .replace(/\[(.*?)\]\((.*?)\)/g, '$1') // Links
-      .replace(/!\[(.*?)\]\((.*?)\)/g, '$1') // Images
-      .replace(/>\s(.*?)(\n|$)/g, '$1$2') // Blockquotes
-      .replace(/(\n|^)\s*[-*+]\s(.*?)(\n|$)/g, '$1$2$3') // Bullet lists
-      .replace(/(\n|^)\s*\d+\.\s(.*?)(\n|$)/g, '$1$2$3') // Numbered lists
-      .replace(/\|.*\|/g, '') // Tables
-      .replace(/\n{3,}/g, '\n\n') // Multiple newlines
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/__(.*?)__/g, '$1')
+      .replace(/```([\s\S]*?)```/g, '$1')
+      .replace(/`(.*?)`/g, '$1')
+      .replace(/#{1,6}\s(.*?)(\n|$)/g, '$1$2')
+      .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+      .replace(/!\[(.*?)\]\((.*?)\)/g, '$1')
+      .replace(/>\s(.*?)(\n|$)/g, '$1$2')
+      .replace(/(\n|^)\s*[-*+]\s(.*?)(\n|$)/g, '$1$2$3')
+      .replace(/(\n|^)\s*\d+\.\s(.*?)(\n|$)/g, '$1$2$3')
+      .replace(/\|.*\|/g, '')
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
       
     setContent(plainText);
@@ -548,11 +528,17 @@ Created on ${new Date().toLocaleDateString()}
     <Dialog 
       open={isOpen} 
       onOpenChange={onClose}
-      modal={!isFullscreen}
-      className={isFullscreen ? "fixed inset-0 z-50 bg-background" : ""}
     >
       <DialogContent 
-        className={`${isFullscreen ? 'max-w-full w-full h-full my-0 rounded-none' : 'max-w-3xl'}`} 
+        style={isFullscreen ? {
+          maxWidth: '100%',
+          width: '100%',
+          height: '100%',
+          margin: 0,
+          borderRadius: 0
+        } : {
+          maxWidth: '3xl'
+        }}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -861,7 +847,6 @@ Created on ${new Date().toLocaleDateString()}
                     onChange={(e) => {
                       setContent(e.target.value);
                       
-                      // Check for @mentions
                       const text = e.target.value;
                       const cursorPos = e.target.selectionStart;
                       const textUntilCursor = text.substring(0, cursorPos);
@@ -1019,39 +1004,25 @@ Created on ${new Date().toLocaleDateString()}
   );
 };
 
-// Helper function to convert markdown to HTML (simplified implementation)
 const convertMarkdownToHtml = (markdown: string) => {
   return markdown
-    // Headers
     .replace(/^# (.*)$/gm, '<h1>$1</h1>')
     .replace(/^## (.*)$/gm, '<h2>$1</h2>')
     .replace(/^### (.*)$/gm, '<h3>$1</h3>')
-    // Bold
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Italic
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Underline
     .replace(/__(.*?)__/g, '<u>$1</u>')
-    // Links
     .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    // Images
     .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" style="max-width: 100%;" />')
-    // Lists
     .replace(/^\s*- (.*?)$/gm, '<li>$1</li>')
     .replace(/^\s*\d+\. (.*?)$/gm, '<li>$1</li>')
     .replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>')
-    // Code blocks
     .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-    // Inline code
     .replace(/`(.*?)`/g, '<code>$1</code>')
-    // Blockquotes
-    .replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>')
-    // Mention
+    .replace(/>\s(.*?)(\n|$)/g, '<blockquote>$1</blockquote>')
     .replace(/@(\w+)/g, '<span class="mention">@$1</span>')
-    // Paragraphs
     .replace(/\n\n/g, '</p><p>')
     .replace(/\n([^<])/g, '<br />$1')
-    // Wrap in paragraph if not already wrapped
     .replace(/^([^<].*[^>])$/gm, '<p>$1</p>');
 };
 

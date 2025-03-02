@@ -17,9 +17,9 @@ import Trash from "./pages/Trash";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
-import World from "./pages/World"; // New World page
+import World from "./pages/World"; // Now the import will be resolved
 import { AppSettingsProvider } from "./components/AppSettingsProvider";
-import ViewSharedNote from "./pages/ViewSharedNote"; // New shared note viewer
+import ViewSharedNote from "./pages/ViewSharedNote"; // Now the import will be resolved
 
 const queryClient = new QueryClient();
 
