@@ -38,7 +38,8 @@ const Signup = () => {
         options: {
           data: {
             username: email.split('@')[0],
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/app`
         }
       });
       

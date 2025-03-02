@@ -24,7 +24,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Configure Supabase to persist sessions
     try {
       // Set session persistence to true by default
-      supabase.auth.onAuthStateChange((event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         setUser(session?.user ?? null);
         if (session?.user) {
           setProfile(getUserProfile());
@@ -33,8 +34,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setLoading(false);
       });
+
+      // Clean up subscription on unmount
+      return () => {
+        subscription.unsubscribe();
+      };
     } catch (error) {
       console.error("Error configuring auth:", error);
+      setLoading(false);
     }
 
     // Check for user preference
@@ -52,14 +59,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Initial session check with persistence
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session?.user?.id);
       setUser(session?.user ?? null);
       if (session?.user) {
         setProfile(getUserProfile());
       }
       setLoading(false);
     });
-
-    return () => {};
   }, [setTheme]);
 
   return (
