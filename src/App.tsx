@@ -17,6 +17,9 @@ import Trash from "./pages/Trash";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import World from "./pages/World"; // New World page
+import { AppSettingsProvider } from "./components/AppSettingsProvider";
+import ViewSharedNote from "./pages/ViewSharedNote"; // New shared note viewer
 
 const queryClient = new QueryClient();
 
@@ -24,100 +27,113 @@ const App = () => (
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <div className="min-h-screen bg-background font-sans antialiased">
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/login" element={<Login />} />
-                <Route
-                  path="/app"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Home />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Home />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/tags"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Tags />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/favorites"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Favorites />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/vault"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Vault />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/profile"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Profile />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/settings"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Settings />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/trash"
-                  element={
-                    <RequireAuth>
-                      <MainLayout>
-                        <Trash />
-                      </MainLayout>
-                    </RequireAuth>
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </div>
-        </TooltipProvider>
+        <AppSettingsProvider>
+          <TooltipProvider>
+            <div className="min-h-screen bg-background font-sans antialiased">
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/shared/:noteId" element={<ViewSharedNote />} />
+                  <Route
+                    path="/app"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Home />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Home />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/tags"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Tags />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/favorites"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Favorites />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/vault"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Vault />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/world"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <World />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/profile"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Profile />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/settings"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Settings />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/trash"
+                    element={
+                      <RequireAuth>
+                        <MainLayout>
+                          <Trash />
+                        </MainLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </div>
+          </TooltipProvider>
+        </AppSettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   </ThemeProvider>

@@ -53,6 +53,15 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Vercel-inspired colors
+				vercel: {
+					DEFAULT: '#000000',
+					foreground: '#FFFFFF',
+					accent: '#333333',
+					muted: '#666666',
+					subtle: '#888888',
+					border: '#333333',
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -75,13 +84,23 @@ export default {
 				'slide-up': {
 					from: { transform: 'translateY(10px)', opacity: '0' },
 					to: { transform: 'translateY(0)', opacity: '1' }
+				},
+				'slide-down': {
+					from: { transform: 'translateY(-10px)', opacity: '0' },
+					to: { transform: 'translateY(0)', opacity: '1' }
+				},
+				'pulse-subtle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-in-out',
-				'slide-up': 'slide-up 0.3s ease-out'
+				'slide-up': 'slide-up 0.3s ease-out',
+				'slide-down': 'slide-down 0.3s ease-out',
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite'
 			},
 			fontFamily: {
 				'sans': ['var(--font-sans)', 'sans-serif'],

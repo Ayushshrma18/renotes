@@ -1,57 +1,52 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --font-sans: 'Inter', sans-serif;
-    --font-mono: 'Space Grotesk', monospace;
-    
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 221 83% 53%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-    --radius: 1rem;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 92%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 91% 60%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 224 76% 48%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.9%;
   }
 }
 
@@ -60,41 +55,107 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@layer components {
-  .glass-card {
-    @apply bg-secondary/80 backdrop-blur-md border border-border shadow-sm;
-  }
-  
-  .note-card {
-    @apply glass-card p-4 rounded-md transition-all duration-200 hover:shadow-md;
-  }
-
-  .btn {
-    @apply rounded-full shadow-sm px-4 py-2 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
-  }
+/* Glass card effect */
+.glass-card {
+  @apply backdrop-blur-md bg-black/30 dark:bg-black/40 border border-white/10 dark:border-white/5;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* Animations */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-@keyframes slide-up {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
 }
 
-/* Apply animations */
-.animate-fade-in {
-  animation: fade-in 0.3s ease-in-out;
+::-webkit-scrollbar-thumb {
+  @apply bg-secondary rounded-full;
 }
 
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-secondary/80;
+}
+
+/* Vercel-inspired styles */
+.vercel-bg {
+  @apply bg-black;
+}
+
+.vercel-card {
+  @apply bg-vercel-accent rounded-xl border border-vercel-border;
+}
+
+.vercel-input {
+  @apply bg-black border border-vercel-border rounded-md;
+}
+
+.vercel-button {
+  @apply bg-white text-black hover:bg-white/90 rounded-md;
+}
+
+.vercel-button-secondary {
+  @apply bg-vercel-accent text-white hover:bg-vercel-accent/90 rounded-md;
+}
+
+/* Minimalist UI Mode */
+.minimalist-mode .decorative-element {
+  @apply hidden;
+}
+
+.minimalist-mode .secondary-action {
+  @apply opacity-0 group-hover:opacity-100 transition-opacity;
+}
+
+.minimalist-mode .card {
+  @apply shadow-none border-0;
+}
+
+.minimalist-mode .sidebar-label,
+.minimalist-mode .sidebar-description {
+  @apply hidden;
+}
+
+/* Note editor styles */
+.note-editor-content {
+  min-height: 200px;
+  width: 100%;
+  @apply font-mono text-sm p-3 rounded-md bg-background border border-input;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Animation utilities */
+.animate-in {
+  @apply animate-fade-in;
+}
+
+.animate-pulse-subtle {
+  @apply animate-pulse-subtle;
+}
+
+/* Avatar styles */
+.avatar-upload-container {
+  @apply relative;
+}
+
+.avatar-upload-overlay {
+  @apply absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 transition-opacity hover:opacity-100;
 }
