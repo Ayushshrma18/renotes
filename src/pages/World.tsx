@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -13,7 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageSquare, Share, Search, Globe, UserCheck, UserPlus } from "lucide-react";
+import { 
+  Heart, 
+  MessageSquare, 
+  Share, 
+  Search, 
+  Globe, 
+  UserCheck, 
+  UserPlus 
+} from "lucide-react";
 import { getPublishedNotes, followUser, unfollowUser, getFriendActivity } from "@/lib/storage";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/components/ui/use-toast";
@@ -24,6 +31,9 @@ const World = () => {
   const [friendActivity, setFriendActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [users, setUsers] = useState<any[]>([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
@@ -125,6 +135,35 @@ const World = () => {
     return content.substring(0, maxLength) + "...";
   };
 
+  const searchUsers = (query: string) => {
+    setIsSearchingUsers(true);
+    setTimeout(() => {
+      const mockUsers = [
+        { id: '1', username: 'johndoe', fullName: 'John Doe', avatar: '' },
+        { id: '2', username: 'janedoe', fullName: 'Jane Doe', avatar: '' },
+        { id: '3', username: 'alice', fullName: 'Alice Smith', avatar: '' },
+        { id: '4', username: 'bob', fullName: 'Bob Johnson', avatar: '' },
+      ].filter(user => 
+        user.username.toLowerCase().includes(query.toLowerCase()) || 
+        user.fullName.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      setUsers(mockUsers);
+      setIsSearchingUsers(false);
+    }, 500);
+  };
+
+  const handleUserSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setUserSearchQuery(query);
+    
+    if (query.length >= 2) {
+      searchUsers(query);
+    } else {
+      setUsers([]);
+    }
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-8">
       <div className="flex justify-between items-center">
@@ -136,25 +175,27 @@ const World = () => {
         </div>
       </div>
 
-      <div className="flex gap-2 w-full max-w-sm">
-        <div className="relative w-full">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search notes or users..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
       <Tabs defaultValue="all">
         <TabsList>
           <TabsTrigger value="all">All Notes</TabsTrigger>
           <TabsTrigger value="activity">Friend Activity</TabsTrigger>
+          <TabsTrigger value="users">Find Users</TabsTrigger>
         </TabsList>
+        
         <TabsContent value="all" className="space-y-4">
+          <div className="flex gap-2 w-full max-w-sm">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search notes..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+          
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -293,6 +334,67 @@ const World = () => {
                   )}
                 </Card>
               ))}
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="users" className="space-y-4">
+          <div className="flex gap-2 w-full max-w-sm">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search for users..."
+                className="pl-8"
+                value={userSearchQuery}
+                onChange={handleUserSearch}
+              />
+            </div>
+          </div>
+          
+          {userSearchQuery.length > 0 && (
+            <div className="mt-4">
+              {isSearchingUsers ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-pulse-subtle h-8 w-8 rounded-full bg-muted"></div>
+                </div>
+              ) : users.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center">
+                    <p className="text-muted-foreground">No users found matching "{userSearchQuery}"</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {users.map((user) => (
+                    <Card key={user.id}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={user.avatar} alt={user.username} />
+                            <AvatarFallback>{user.username[0]?.toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <CardTitle className="text-base">{user.fullName}</CardTitle>
+                            <CardDescription>@{user.username}</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardFooter className="pt-2 pb-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="ml-auto"
+                          onClick={() => handleFollow(user.id, user.username)}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Follow
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </TabsContent>

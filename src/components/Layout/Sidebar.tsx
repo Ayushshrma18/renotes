@@ -1,5 +1,5 @@
 
-import { Home, Tags, Heart, User, Trash2, Lock, Settings } from "lucide-react";
+import { Home, Tags, Heart, User, Trash2, Lock, Settings, Globe, Search } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
@@ -12,6 +12,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
 
   const menuItems = [
     { icon: Home, label: "Home", path: "/app" },
+    { icon: Globe, label: "World", path: "/app/world" },
     { icon: Tags, label: "Tags", path: "/app/tags" },
     { icon: Heart, label: "Favorites", path: "/app/favorites" },
     { icon: Lock, label: "Vault", path: "/app/vault" },

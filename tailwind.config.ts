@@ -103,7 +103,7 @@ export default {
 				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite'
 			},
 			fontFamily: {
-				'sans': ['var(--font-sans)', 'sans-serif'],
+				'sans': ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Helvetica Neue', 'Arial', 'sans-serif'],
 				'mono': ['var(--font-mono)', 'monospace']
 			}
 		}
