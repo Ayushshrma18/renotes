@@ -21,7 +21,6 @@ const Vault = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Check if PIN is already set
     const savedPin = localStorage.getItem("vault_pin");
     if (savedPin) {
       setStoredPin(savedPin);
@@ -48,7 +47,6 @@ const Vault = () => {
       return;
     }
 
-    // Save PIN to local storage
     localStorage.setItem("vault_pin", pin);
     setStoredPin(pin);
     setIsPinSetup(true);
@@ -61,7 +59,6 @@ const Vault = () => {
   const unlockVault = () => {
     if (pin === storedPin) {
       setIsLocked(false);
-      // Load private notes
       const allNotes = getNotes();
       const vaultNotes = allNotes.filter(note => 
         note.tags.includes("private") && !note.deletedAt
@@ -104,7 +101,6 @@ const Vault = () => {
     setIsEditorOpen(false);
     setSelectedNote(null);
     
-    // Refresh notes list
     const allNotes = getNotes();
     const vaultNotes = allNotes.filter(note => 
       note.tags.includes("private") && !note.deletedAt
@@ -112,44 +108,7 @@ const Vault = () => {
     setPrivateNotes(vaultNotes);
   };
 
-  // Create a custom NoteEditor wrapper specifically for vault notes
   const VaultNoteEditor = ({ isOpen, onClose, note }: { isOpen: boolean, onClose: () => void, note: Note | null }) => {
-    if (!isOpen) return null;
-
-    // Create a specific save handler for vault notes
-    const handleSaveVaultNote = async (noteToSave: Note) => {
-      try {
-        // Ensure the note has the private tag
-        if (!noteToSave.tags.includes("private")) {
-          noteToSave.tags.push("private");
-        }
-        
-        await saveNote(noteToSave);
-        
-        // Refresh the private notes list
-        const allNotes = getNotes();
-        const vaultNotes = allNotes.filter(note => 
-          note.tags.includes("private") && !note.deletedAt
-        );
-        setPrivateNotes(vaultNotes);
-        
-        toast({
-          title: "Private Note Saved",
-          description: "Your note has been saved to the vault",
-        });
-        
-        onClose();
-      } catch (error) {
-        console.error("Error saving vault note:", error);
-        toast({
-          title: "Error",
-          description: "Failed to save note",
-          variant: "destructive",
-        });
-      }
-    };
-
-    // Create a custom wrapper component that ensures private tag is maintained
     return (
       <NoteEditor
         isOpen={isOpen}

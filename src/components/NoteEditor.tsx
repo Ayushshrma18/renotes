@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,22 +92,30 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<string>("write");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [forcedOpen, setForcedOpen] = useState(false);
   
   const { toast } = useToast();
   const { user } = useAuth();
   const { settings } = useAppSettings();
   const { syncMessageShown, setSyncMessageShown } = useAppSettings();
 
+  // Force the dialog to stay open when isOpen is true
+  useEffect(() => {
+    if (isOpen) {
+      setForcedOpen(true);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (note) {
       setTitle(note.title);
       setContent(note.content);
-      setTags(note.tags);
+      setTags(note.tags || []);
       setIsPublished(note.isPublished || false);
       
-      if (note.content.includes('text-align: center')) {
+      if (note.content && note.content.includes('text-align: center')) {
         setTextAlign('center');
-      } else if (note.content.includes('text-align: right')) {
+      } else if (note.content && note.content.includes('text-align: right')) {
         setTextAlign('right');
       } else {
         setTextAlign('left');
@@ -135,6 +144,11 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
       }
     }, 0);
   }, [note, isOpen]);
+
+  const handleClose = () => {
+    setForcedOpen(false);
+    onClose();
+  };
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -185,7 +199,7 @@ const NoteEditor = ({ isOpen, onClose, note }: NoteEditorProps) => {
         });
       }
       
-      onClose();
+      handleClose();
     } catch (error) {
       console.error("Error saving note:", error);
       toast({
@@ -526,8 +540,10 @@ Created on ${new Date().toLocaleDateString()}
 
   return (
     <Dialog 
-      open={isOpen} 
-      onOpenChange={onClose}
+      open={forcedOpen} 
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
     >
       <DialogContent 
         style={isFullscreen ? {
@@ -540,6 +556,17 @@ Created on ${new Date().toLocaleDateString()}
           maxWidth: '3xl'
         }}
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => {
+          // Prevent closing when clicking outside
+          e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          // Allow closing with escape key if explicitly wanted
+          if (!isSaving) {
+            e.preventDefault();
+            handleClose();
+          }
+        }}
       >
         <DialogHeader>
           <div className="flex items-center justify-between">
@@ -991,7 +1018,7 @@ Created on ${new Date().toLocaleDateString()}
             </Button>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={handleClose}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={isSaving}>
