@@ -4,17 +4,20 @@ import { supabase } from '../supabaseClient';
 import { User } from '@supabase/supabase-js';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useTheme } from 'next-themes';
+import { getUserProfile, type UserProfile } from '@/lib/storage';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  profile: UserProfile | null;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ user: null, loading: true, profile: null });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const { setTheme } = useTheme();
 
   useEffect(() => {
@@ -23,6 +26,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Set session persistence to true by default
       supabase.auth.onAuthStateChange((event, session) => {
         setUser(session?.user ?? null);
+        if (session?.user) {
+          setProfile(getUserProfile());
+        } else {
+          setProfile(null);
+        }
         setLoading(false);
       });
     } catch (error) {
@@ -45,6 +53,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Initial session check with persistence
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        setProfile(getUserProfile());
+      }
       setLoading(false);
     });
 
@@ -52,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [setTheme]);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, profile }}>
       {!loading && children}
     </AuthContext.Provider>
   );

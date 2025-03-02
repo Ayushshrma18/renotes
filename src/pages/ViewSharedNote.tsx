@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getNoteByShareId, type Note } from "@/lib/storage";
@@ -48,9 +47,14 @@ const convertMarkdownToHtml = (markdown: string) => {
     .replace(/^([^<].*[^>])$/gm, '<p>$1</p>');
 };
 
+// Extended Note type with optional author field for shared notes
+interface SharedNote extends Note {
+  author?: string;
+}
+
 const ViewSharedNote = () => {
   const { noteId } = useParams<{ noteId: string }>();
-  const [note, setNote] = useState<Note | null>(null);
+  const [note, setNote] = useState<SharedNote | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -68,7 +72,7 @@ const ViewSharedNote = () => {
         if (!fetchedNote) {
           setError("Note not found or not publicly available");
         } else {
-          setNote(fetchedNote);
+          setNote(fetchedNote as SharedNote);
         }
       } catch (err) {
         console.error("Error fetching note:", err);
